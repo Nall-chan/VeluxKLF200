@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mdanter\Ecc\Crypto\Signature;
 
 use Mdanter\Ecc\EccFactory;
@@ -14,7 +16,7 @@ class SignHasher implements HasherInterface
      * @var int[]
      */
     protected static $sizeMap = [
-        'sha1' => 20,
+        'sha1'   => 20,
         'sha224' => 28,
         'sha256' => 32,
         'sha384' => 48,
@@ -33,13 +35,14 @@ class SignHasher implements HasherInterface
 
     /**
      * SignHasher constructor.
-     * @param string $algorithm
+     *
+     * @param string                $algorithm
      * @param GmpMathInterface|null $math
      */
     public function __construct(string $algorithm, GmpMathInterface $math = null)
     {
         if (!array_key_exists($algorithm, self::$sizeMap)) {
-            throw new \InvalidArgumentException("Unsupported hashing algorithm");
+            throw new \InvalidArgumentException('Unsupported hashing algorithm');
         }
 
         $this->algorithm = $algorithm;
@@ -64,6 +67,7 @@ class SignHasher implements HasherInterface
 
     /**
      * @param string $data
+     *
      * @return string
      */
     public function makeRawHash(string $data): string
@@ -72,8 +76,9 @@ class SignHasher implements HasherInterface
     }
 
     /**
-     * @param \GMP $hash
+     * @param \GMP           $hash
      * @param GeneratorPoint $G
+     *
      * @return \GMP
      */
     public function truncateForECDSA(\GMP $hash, GeneratorPoint $G)
@@ -87,8 +92,9 @@ class SignHasher implements HasherInterface
     }
 
     /**
-     * @param string $data
+     * @param string         $data
      * @param GeneratorPoint $G
+     *
      * @return \GMP
      */
     public function makeHash(string $data, GeneratorPoint $G): \GMP

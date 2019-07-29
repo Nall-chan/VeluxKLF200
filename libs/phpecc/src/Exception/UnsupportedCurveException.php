@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Exception;
@@ -17,7 +18,7 @@ class UnsupportedCurveException extends \RuntimeException
      */
     private $curveName;
 
-    public function __construct(string $message = "", int $code = 0, Throwable $previous = null)
+    public function __construct(string $message = '', int $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

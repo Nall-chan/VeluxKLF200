@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Assert
+ * Assert.
  *
  * LICENSE
  *
@@ -91,7 +93,6 @@ abstract class Assert
 
         return $lazyAssertion
             ->setAssertClass(\get_called_class())
-            ->setExceptionClass(static::$lazyAssertionExceptionClass)
-        ;
+            ->setExceptionClass(static::$lazyAssertionExceptionClass);
     }
 }

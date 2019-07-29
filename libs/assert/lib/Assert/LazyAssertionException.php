@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Assert
+ * Assert.
  *
  * LICENSE
  *
@@ -28,7 +30,7 @@ class LazyAssertionException extends InvalidArgumentException
      */
     public static function fromErrors(array $errors)
     {
-        $message = \sprintf('The following %d assertions failed:', \count($errors))."\n";
+        $message = \sprintf('The following %d assertions failed:', \count($errors)) . "\n";
 
         $i = 1;
         foreach ($errors as $error) {

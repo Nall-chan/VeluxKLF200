@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * The MIT License (MIT)
  *
@@ -9,7 +11,7 @@
  * of the MIT license.  See the LICENSE file for details.
  */
 
- include_once __DIR__.'/../vendor/autoload.php';
+ include_once __DIR__ . '/../vendor/autoload.php';
 
 use AESGCM\AESGCM;
 use Assert\Assertion;
@@ -29,9 +31,9 @@ function runEncryptionBenchmark($nb = 1000)
     $P = hex2bin('d9313225f88406e5a55909c5aff5269a86a7a9531534f7da2e4c303d8a318a721c3c0c95956809532fcf0e2449a6b525b16aedf5aa0de657ba637b39');
     $A = hex2bin('feedfacedeadbeeffeedfacedeadbeefabaddad2');
 
-    print_r('################################'.PHP_EOL);
-    print_r('# AES-GCM ENCRYPTION BENCHMARK #'.PHP_EOL);
-    print_r('################################'.PHP_EOL);
+    print_r('################################' . PHP_EOL);
+    print_r('# AES-GCM ENCRYPTION BENCHMARK #' . PHP_EOL);
+    print_r('################################' . PHP_EOL);
 
     $time = -microtime(true);
     for ($i = 0; $i < $nb; $i++) {
@@ -39,9 +41,9 @@ function runEncryptionBenchmark($nb = 1000)
     }
     $time += microtime(true);
     $ops = $nb / $time;
-    printf('%f OPS (tested on %d encryptions)'.PHP_EOL, $ops, $nb);
+    printf('%f OPS (tested on %d encryptions)' . PHP_EOL, $ops, $nb);
 
-    print_r('################################'.PHP_EOL);
+    print_r('################################' . PHP_EOL);
 }
 
 /**
@@ -60,9 +62,9 @@ function runDecryptionBenchmark($nb = 1000)
     $A = hex2bin('feedfacedeadbeeffeedfacedeadbeefabaddad2');
     $T = hex2bin('a44a8266ee1c8eb0c8b5d4cf5ae9f19a');
 
-    print_r('################################'.PHP_EOL);
-    print_r('# AES-GCM DECRYPTION BENCHMARK #'.PHP_EOL);
-    print_r('################################'.PHP_EOL);
+    print_r('################################' . PHP_EOL);
+    print_r('# AES-GCM DECRYPTION BENCHMARK #' . PHP_EOL);
+    print_r('################################' . PHP_EOL);
 
     $time = -microtime(true);
     for ($i = 0; $i < $nb; $i++) {
@@ -70,9 +72,9 @@ function runDecryptionBenchmark($nb = 1000)
     }
     $time += microtime(true);
     $ops = $nb / $time;
-    printf('%f OPS (tested on %d encryptions)'.PHP_EOL, $ops, $nb);
+    printf('%f OPS (tested on %d encryptions)' . PHP_EOL, $ops, $nb);
 
-    print_r('################################'.PHP_EOL);
+    print_r('################################' . PHP_EOL);
 }
 
 runEncryptionBenchmark();

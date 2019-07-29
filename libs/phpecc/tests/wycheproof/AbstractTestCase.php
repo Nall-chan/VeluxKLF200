@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\WycheProof;
@@ -13,17 +14,17 @@ use PHPUnit\Framework\TestCase;
 abstract class AbstractTestCase extends TestCase
 {
     protected $hashFunctions = [
-        "SHA-224" => "sha224",
-        "SHA-256" => "sha256",
-        "SHA-384" => "sha384",
-        "SHA-512" => "sha512",
+        'SHA-224' => 'sha224',
+        'SHA-256' => 'sha256',
+        'SHA-384' => 'sha384',
+        'SHA-512' => 'sha512',
     ];
 
     protected $curveAltName = [
-        "secp224r1" => NistCurve::NAME_P224,
-        "secp256r1" => NistCurve::NAME_P256,
-        "secp384r1" => NistCurve::NAME_P384,
-        "secp521r1" => NistCurve::NAME_P521,
+        'secp224r1' => NistCurve::NAME_P224,
+        'secp256r1' => NistCurve::NAME_P256,
+        'secp384r1' => NistCurve::NAME_P384,
+        'secp521r1' => NistCurve::NAME_P521,
     ];
 
     public function getHasher(string $id): HasherInterface
@@ -36,11 +37,12 @@ abstract class AbstractTestCase extends TestCase
 
     /**
      * @param array $extra
+     *
      * @return array
      */
     protected function _getAdapters(array $extra = null)
     {
-        if (! defined('PHPUNIT_DEBUG')) {
+        if (!defined('PHPUNIT_DEBUG')) {
             define('PHPUNIT_DEBUG', false);
         }
 
@@ -51,9 +53,9 @@ abstract class AbstractTestCase extends TestCase
         }
 
         if ($extra == null) {
-            return array(
-                array($adapter),
-            );
+            return [
+                [$adapter],
+            ];
         }
 
         $adapters = $this->_getAdapters(null);

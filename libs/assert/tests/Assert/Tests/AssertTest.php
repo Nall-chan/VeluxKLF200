@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Assert
+ * Assert.
  *
  * LICENSE
  *
@@ -120,30 +122,30 @@ class AssertTest extends TestCase
     public static function dataInvalidIntegerish()
     {
         return [
-            'A float' => [1.23],
-            'Boolean true' => [true],
-            'Boolean false' => [false],
-            'A text string' => ['test'],
-            'A null' => [null],
-            'A float in a string' => ['1.23'],
-            'A negative float in a string' => ['-1.23'],
-            'A file pointer' => [\fopen(__FILE__, 'r')],
-            'A float in a string with a leading space' => [' 1.23'],
-            'An integer in a string with a leading space' => [' 123'],
-            'A negative integer in a string with a leading space' => [' -123'],
-            'An integer in a string with a trailing space' => ['456 '],
+            'A float'                                              => [1.23],
+            'Boolean true'                                         => [true],
+            'Boolean false'                                        => [false],
+            'A text string'                                        => ['test'],
+            'A null'                                               => [null],
+            'A float in a string'                                  => ['1.23'],
+            'A negative float in a string'                         => ['-1.23'],
+            'A file pointer'                                       => [\fopen(__FILE__, 'r')],
+            'A float in a string with a leading space'             => [' 1.23'],
+            'An integer in a string with a leading space'          => [' 123'],
+            'A negative integer in a string with a leading space'  => [' -123'],
+            'An integer in a string with a trailing space'         => ['456 '],
             'A negative integer in a string with a trailing space' => ['-456 '],
-            'An array' => [[]],
-            'An object' => [new stdClass()],
-            'A float that is less than 1' => [0.1],
-            'A float that is less than 0.1' => [0.01],
-            'A float that is less than 0.01' => [0.001],
-            'A float in a string that is less than 1' => ['0.1'],
-            'A float in a string that is less than 0.1' => ['0.01'],
-            'A float in a string that is less than 0.01' => ['0.001'],
-            'An empty string' => [''],
-            'A single space string' => [' '],
-            'A multiple spaced string' => ['  '],
+            'An array'                                             => [[]],
+            'An object'                                            => [new stdClass()],
+            'A float that is less than 1'                          => [0.1],
+            'A float that is less than 0.1'                        => [0.01],
+            'A float that is less than 0.01'                       => [0.001],
+            'A float in a string that is less than 1'              => ['0.1'],
+            'A float in a string that is less than 0.1'            => ['0.01'],
+            'A float in a string that is less than 0.01'           => ['0.001'],
+            'An empty string'                                      => [''],
+            'A single space string'                                => [' '],
+            'A multiple spaced string'                             => ['  '],
         ];
     }
 
@@ -1114,7 +1116,7 @@ class AssertTest extends TestCase
      */
     public function testFileDoesNotExists()
     {
-        Assertion::file(__DIR__.'/does-not-exists');
+        Assertion::file(__DIR__ . '/does-not-exists');
     }
 
     /**
@@ -1125,7 +1127,7 @@ class AssertTest extends TestCase
     {
         $this->assertTrue(Assertion::directory(__DIR__));
 
-        Assertion::directory(__DIR__.'/does-not-exist');
+        Assertion::directory(__DIR__ . '/does-not-exist');
     }
 
     /**
@@ -1136,7 +1138,7 @@ class AssertTest extends TestCase
     {
         $this->assertTrue(Assertion::readable(__FILE__));
 
-        Assertion::readable(__DIR__.'/does-not-exist');
+        Assertion::readable(__DIR__ . '/does-not-exist');
     }
 
     /**
@@ -1147,7 +1149,7 @@ class AssertTest extends TestCase
     {
         $this->assertTrue(Assertion::writeable(\sys_get_temp_dir()));
 
-        Assertion::writeable(__DIR__.'/does-not-exist');
+        Assertion::writeable(__DIR__ . '/does-not-exist');
     }
 
     /**
@@ -1208,10 +1210,10 @@ class AssertTest extends TestCase
     public static function isJsonStringDataprovider()
     {
         return [
-            '»null« value' => [\json_encode(null)],
+            '»null« value'  => [\json_encode(null)],
             '»false« value' => [\json_encode(false)],
-            'array value' => ['["false"]'],
-            'object value' => ['{"tux":"false"}'],
+            'array value'   => ['["false"]'],
+            'object value'  => ['{"tux":"false"}'],
         ];
     }
 
@@ -1230,7 +1232,7 @@ class AssertTest extends TestCase
     public static function isJsonStringInvalidStringDataprovider()
     {
         return [
-            'no json string' => ['invalid json encoded string'],
+            'no json string'       => ['invalid json encoded string'],
             'error in json string' => ['{invalid json encoded string}'],
         ];
     }
@@ -1387,7 +1389,7 @@ class AssertTest extends TestCase
         $this->assertTrue(Assertion::count(new SimpleXMLElement('<a><b /><c /></a>'), 2));
         // Test ResourceBundle counting using resources generated for PHP testing of ResourceBundle
         // https://github.com/php/php-src/commit/8f4337f2551e28d98290752e9ca99fc7f87d93b5
-        $this->assertTrue(Assertion::count(new ResourceBundle('en_US', __DIR__.'/_files/ResourceBundle'), 6));
+        $this->assertTrue(Assertion::count(new ResourceBundle('en_US', __DIR__ . '/_files/ResourceBundle'), 6));
     }
 
     public static function dataInvalidCount()
@@ -1420,16 +1422,16 @@ class AssertTest extends TestCase
         $this->assertTrue(Assertion::minCount(['Hi', 'There'], 1));
         $this->assertTrue(Assertion::minCount(new Fixtures\OneCountable(), 1));
         $this->assertTrue(Assertion::minCount(new SimpleXMLElement('<a><b /><c /></a>'), 1));
-        $this->assertTrue(Assertion::minCount(new ResourceBundle('en_US', __DIR__.'/_files/ResourceBundle'), 2));
+        $this->assertTrue(Assertion::minCount(new ResourceBundle('en_US', __DIR__ . '/_files/ResourceBundle'), 2));
     }
 
     public static function dataInvalidMinCount()
     {
         return [
-            '2 elements while at least 3 expected' => [['Hi', 'There'], 3],
+            '2 elements while at least 3 expected'  => [['Hi', 'There'], 3],
             '1 countable while at least 2 expected' => [new Fixtures\OneCountable(), 2],
             '2 countable while at least 3 expected' => [new SimpleXMLElement('<a><b /><c /></a>'), 3],
-            '6 countable while at least 7 expected' => [new ResourceBundle('en_US', __DIR__.'/_files/ResourceBundle'), 7],
+            '6 countable while at least 7 expected' => [new ResourceBundle('en_US', __DIR__ . '/_files/ResourceBundle'), 7],
         ];
     }
 
@@ -1453,16 +1455,16 @@ class AssertTest extends TestCase
         $this->assertTrue(Assertion::maxCount(['Hi', 'There'], 2));
         $this->assertTrue(Assertion::maxCount(new Fixtures\OneCountable(), 1));
         $this->assertTrue(Assertion::maxCount(new SimpleXMLElement('<a><b /><c /></a>'), 3));
-        $this->assertTrue(Assertion::maxCount(new ResourceBundle('en_US', __DIR__.'/_files/ResourceBundle'), 7));
+        $this->assertTrue(Assertion::maxCount(new ResourceBundle('en_US', __DIR__ . '/_files/ResourceBundle'), 7));
     }
 
     public static function dataInvalidMaxCount()
     {
         return [
-            '2 elements while at most 1 expected' => [['Hi', 'There'], 1],
+            '2 elements while at most 1 expected'  => [['Hi', 'There'], 1],
             '1 countable while at most 0 expected' => [new Fixtures\OneCountable(), 0],
             '2 countable while at most 1 expected' => [new SimpleXMLElement('<a><b /><c /></a>'), 1],
-            '6 countable while at most 5 expected' => [new ResourceBundle('en_US', __DIR__.'/_files/ResourceBundle'), 5],
+            '6 countable while at most 5 expected' => [new ResourceBundle('en_US', __DIR__ . '/_files/ResourceBundle'), 5],
         ];
     }
 
@@ -1512,7 +1514,7 @@ class AssertTest extends TestCase
     public function invalidChoicesProvider()
     {
         return [
-            'empty values' => [[], ['tux'], Assertion::VALUE_EMPTY],
+            'empty values'             => [[], ['tux'], Assertion::VALUE_EMPTY],
             'empty recodes in $values' => [['tux' => ''], ['tux'], Assertion::VALUE_EMPTY],
         ];
     }
@@ -1787,7 +1789,7 @@ class AssertTest extends TestCase
     public function testValidCallable()
     {
         $this->assertTrue(Assertion::isCallable('\is_callable'));
-        $this->assertTrue(Assertion::isCallable(__NAMESPACE__.'\\Fixtures\\someCallable'));
+        $this->assertTrue(Assertion::isCallable(__NAMESPACE__ . '\\Fixtures\\someCallable'));
         $this->assertTrue(Assertion::isCallable([OneCountable::class, 'count']));
         $this->assertTrue(
             Assertion::isCallable(
@@ -2213,7 +2215,7 @@ class AssertTest extends TestCase
     public function invalidEqArraySubsetProvider()
     {
         return [
-            'firstArgumentNotArray' => ['notArray', []],
+            'firstArgumentNotArray'  => ['notArray', []],
             'secondArgumentNotArray' => [[], 'notArray'],
         ];
     }

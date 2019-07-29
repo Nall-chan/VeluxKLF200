@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Primitives;
 
 /**
  * *********************************************************************
- * Copyright (C) 2012 Matyas Danter
+ * Copyright (C) 2012 Matyas Danter.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the "Software"),
@@ -40,7 +41,6 @@ namespace Mdanter\Ecc\Primitives;
  */
 interface PointInterface
 {
-
     /**
      * Returns true if instance is an non-finite point.
      */
@@ -49,34 +49,38 @@ interface PointInterface
     /**
      * Adds another point to the current one and returns the resulting point.
      *
-     * @param  PointInterface $addend
+     * @param PointInterface $addend
+     *
      * @return PointInterface
      */
-    public function add(PointInterface $addend): PointInterface;
+    public function add(self $addend): self;
 
     /**
      * Compares the current instance to another point.
      *
-     * @param  PointInterface $other
-     * @return int            A number different than 0 when current instance is less than the given point, 0 when they are equal.
+     * @param PointInterface $other
+     *
+     * @return int A number different than 0 when current instance is less than the given point, 0 when they are equal.
      */
-    public function cmp(PointInterface $other): int;
+    public function cmp(self $other): int;
 
     /**
      * Checks whether the current instance is equal to the given point.
      *
-     * @param  PointInterface $other
-     * @return bool                    true when points are equal, false otherwise.
+     * @param PointInterface $other
+     *
+     * @return bool true when points are equal, false otherwise.
      */
-    public function equals(PointInterface $other): bool;
+    public function equals(self $other): bool;
 
     /**
      * Multiplies the point by a scalar value and returns the resulting point.
      *
-     * @param  \GMP $multiplier
+     * @param \GMP $multiplier
+     *
      * @return PointInterface
      */
-    public function mul(\GMP $multiplier): PointInterface;
+    public function mul(\GMP $multiplier): self;
 
     /**
      * Returns the curve to which the point belongs.
@@ -90,7 +94,7 @@ interface PointInterface
      *
      * @return PointInterface
      */
-    public function getDouble(): PointInterface;
+    public function getDouble(): self;
 
     /**
      * Returns the order of the point.

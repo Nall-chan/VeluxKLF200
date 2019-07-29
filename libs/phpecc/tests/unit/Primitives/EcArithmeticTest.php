@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Primitives;
 
 use Mdanter\Ecc\Math\GmpMathInterface;
-use Mdanter\Ecc\Primitives\CurveParameters;
 use Mdanter\Ecc\Primitives\CurveFp;
 use Mdanter\Ecc\Primitives\CurveFpInterface;
+use Mdanter\Ecc\Primitives\CurveParameters;
 use Mdanter\Ecc\Tests\AbstractTestCase;
 
 class EcArithmeticTest extends AbstractTestCase
@@ -23,7 +24,6 @@ class EcArithmeticTest extends AbstractTestCase
     }
 
     /**
-     *
      * @dataProvider getAdapters
      * @testdox Test point additions yield expected results
      */
@@ -36,7 +36,6 @@ class EcArithmeticTest extends AbstractTestCase
     }
 
     /**
-     *
      * @dataProvider getAdapters
      * @testdox Test point additions are associative
      */
@@ -68,7 +67,6 @@ class EcArithmeticTest extends AbstractTestCase
     }
 
     /**
-     *
      * @dataProvider getAdapters
      */
     public function testDouble(GmpMathInterface $math)
@@ -90,7 +88,6 @@ class EcArithmeticTest extends AbstractTestCase
     }
 
     /**
-     *
      * @dataProvider getAdapters
      */
     public function testAddDouble(GmpMathInterface $math)
@@ -102,7 +99,6 @@ class EcArithmeticTest extends AbstractTestCase
     }
 
     /**
-     *
      * @dataProvider getAdapters
      */
     public function testMultiply(GmpMathInterface $math)
@@ -128,21 +124,20 @@ class EcArithmeticTest extends AbstractTestCase
     {
         // https://www.certicom.com/index.php/52-the-elliptic-curve-discrete-logarithm-problem
         return $this->_getAdapters([
-            [ 23, 9, 17, 16, 5, 9, 4, 5 ],
-            [ 23, 9, 17, 16, 5, 8, 12, 17 ],
-            [ 23, 9, 17, 16, 5, 7, 8, 7 ],
-            [ 23, 9, 17, 16, 5, 6, 7, 3 ],
-            [ 23, 9, 17, 16, 5, 5, 13, 10 ],
-            [ 23, 9, 17, 16, 5, 4, 19, 20 ],
-            [ 23, 9, 17, 16, 5, 3, 14, 14 ],
-            [ 23, 9, 17, 16, 5, 2, 20, 20 ],
-            [ 23, 9, 17, 16, 5, 1, 16, 5 ],
-            [ 2111, 20, 13, 3, 10, 57, 470, 1757]
+            [23, 9, 17, 16, 5, 9, 4, 5],
+            [23, 9, 17, 16, 5, 8, 12, 17],
+            [23, 9, 17, 16, 5, 7, 8, 7],
+            [23, 9, 17, 16, 5, 6, 7, 3],
+            [23, 9, 17, 16, 5, 5, 13, 10],
+            [23, 9, 17, 16, 5, 4, 19, 20],
+            [23, 9, 17, 16, 5, 3, 14, 14],
+            [23, 9, 17, 16, 5, 2, 20, 20],
+            [23, 9, 17, 16, 5, 1, 16, 5],
+            [2111, 20, 13, 3, 10, 57, 470, 1757]
         ]);
     }
 
     /**
-     *
      * @dataProvider getMultAdapters
      */
     public function testMultiply2(GmpMathInterface $math, $p, $a, $b, $x, $y, $m, $ex, $ey)
@@ -161,7 +156,6 @@ class EcArithmeticTest extends AbstractTestCase
     }
 
     /**
-     *
      * @dataProvider getAdapters
      */
     public function testMultiplyAssociative(GmpMathInterface $math)
@@ -178,7 +172,6 @@ class EcArithmeticTest extends AbstractTestCase
     }
 
     /**
-     *
      * @dataProvider getAdapters
      */
     public function testInfinity(GmpMathInterface $math)

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mdanter\Ecc\Math;
 
 class MathAdapterFactory
@@ -19,6 +21,7 @@ class MathAdapterFactory
 
     /**
      * @param bool $debug
+     *
      * @return DebugDecorator|GmpMathInterface|null
      */
     public static function getAdapter(bool $debug = false): GmpMathInterface
@@ -34,7 +37,8 @@ class MathAdapterFactory
 
     /**
      * @param GmpMathInterface $adapter
-     * @param bool $debug
+     * @param bool             $debug
+     *
      * @return DebugDecorator|GmpMathInterface
      */
     private static function wrapAdapter(GmpMathInterface $adapter, bool $debug): GmpMathInterface

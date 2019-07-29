@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Assert
+ * Assert.
  *
  * LICENSE
  *
@@ -20,6 +22,6 @@ class PR142_OverrideStringify extends Assertion
 {
     protected static function stringify($value)
     {
-        return '***'.parent::stringify($value).'***';
+        return '***' . parent::stringify($value) . '***';
     }
 }

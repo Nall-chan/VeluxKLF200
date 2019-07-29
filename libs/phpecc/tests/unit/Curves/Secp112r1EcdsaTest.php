@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Curves;
@@ -8,7 +9,7 @@ use Mdanter\Ecc\Tests\AbstractTestCase;
 
 class Secp112r1EcdsaTest extends AbstractTestCase
 {
-    # https://github.com/johndoe31415/joeecc/blob/28e112174b924dd264f43b82577a4e5ca07e66df/ecc/tests/CryptoOpsTests.py#L34
+    // https://github.com/johndoe31415/joeecc/blob/28e112174b924dd264f43b82577a4e5ca07e66df/ecc/tests/CryptoOpsTests.py#L34
     public function testEcdsaOnSecp112r1()
     {
         $expectedR = '1696427335541514286367855701829018';
@@ -20,9 +21,9 @@ class Secp112r1EcdsaTest extends AbstractTestCase
         $key = gmp_init('deadbeef', 16);
         $priv = $g->getPrivateKeyFrom($key);
 
-        $data = "foobar";
+        $data = 'foobar';
         $signer = new \Mdanter\Ecc\Crypto\Signature\Signer($adapter);
-        $hasher = new SignHasher("sha1");
+        $hasher = new SignHasher('sha1');
         $hash = $hasher->makeHash($data, $g);
         $randomK = gmp_init('12345', 10);
 

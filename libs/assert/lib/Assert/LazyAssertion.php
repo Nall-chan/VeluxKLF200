@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Assert
+ * Assert.
  *
  * LICENSE
  *
@@ -194,7 +196,7 @@ class LazyAssertion
     public function setAssertClass(string $className)
     {
         if (Assert::class !== $className && !\is_subclass_of($className, Assert::class)) {
-            throw new LogicException($className.' is not (a subclass of) '. Assert::class);
+            throw new LogicException($className . ' is not (a subclass of) ' . Assert::class);
         }
 
         $this->assertClass = $className;
@@ -210,7 +212,7 @@ class LazyAssertion
     public function setExceptionClass(string $className)
     {
         if (LazyAssertionException::class !== $className && !\is_subclass_of($className, LazyAssertionException::class)) {
-            throw new LogicException($className.' is not (a subclass of) '.LazyAssertionException::class);
+            throw new LogicException($className . ' is not (a subclass of) ' . LazyAssertionException::class);
         }
 
         $this->exceptionClass = $className;

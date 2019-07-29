@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Primitives;
@@ -8,7 +9,7 @@ use Mdanter\Ecc\Random\RandomNumberGeneratorInterface;
 
 /**
  * *********************************************************************
- * Copyright (C) 2012 Matyas Danter
+ * Copyright (C) 2012 Matyas Danter.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the "Software"),
@@ -35,7 +36,6 @@ use Mdanter\Ecc\Random\RandomNumberGeneratorInterface;
  */
 interface CurveFpInterface
 {
-
     /**
      * Returns a modular arithmetic adapter.
      *
@@ -46,9 +46,10 @@ interface CurveFpInterface
     /**
      * Returns the point identified by given coordinates.
      *
-     * @param  \GMP $x
-     * @param  \GMP $y
-     * @param  \GMP $order
+     * @param \GMP $x
+     * @param \GMP $y
+     * @param \GMP $order
+     *
      * @return PointInterface
      */
     public function getPoint(\GMP $x, \GMP $y, \GMP $order = null): PointInterface;
@@ -56,6 +57,7 @@ interface CurveFpInterface
     /**
      * @param bool $wasOdd
      * @param \GMP $x
+     *
      * @return \GMP
      */
     public function recoverYfromX(bool $wasOdd, \GMP $x): \GMP;
@@ -68,11 +70,11 @@ interface CurveFpInterface
     public function getInfinity(): PointInterface;
 
     /**
+     * @param \GMP                           $x
+     * @param \GMP                           $y
+     * @param \GMP                           $order
+     * @param RandomNumberGeneratorInterface $randomGenerator
      *
-     * @param  \GMP $x
-     * @param  \GMP $y
-     * @param  \GMP $order
-     * @param  RandomNumberGeneratorInterface $randomGenerator
      * @return GeneratorPoint
      */
     public function getGenerator(\GMP $x, \GMP $y, \GMP $order, RandomNumberGeneratorInterface $randomGenerator = null): GeneratorPoint;
@@ -80,8 +82,9 @@ interface CurveFpInterface
     /**
      * Checks whether the curve contains the given coordinates.
      *
-     * @param  \GMP $x
-     * @param  \GMP $y
+     * @param \GMP $x
+     * @param \GMP $y
+     *
      * @return bool
      */
     public function contains(\GMP $x, \GMP $y): bool;
@@ -115,21 +118,23 @@ interface CurveFpInterface
     /**
      * Compares the curve to another.
      *
-     * @param  CurveFpInterface $other
-     * @return int              < 0 if $this < $other, 0 if $other == $this, > 0 if $this > $other
+     * @param CurveFpInterface $other
+     *
+     * @return int < 0 if $this < $other, 0 if $other == $this, > 0 if $this > $other
      */
-    public function cmp(CurveFpInterface $other): int;
+    public function cmp(self $other): int;
 
     /**
      * Checks whether the curve is equal to another.
      *
-     * @param  CurveFpInterface $other
+     * @param CurveFpInterface $other
+     *
      * @return bool
      */
-    public function equals(CurveFpInterface $other): bool;
+    public function equals(self $other): bool;
 
     /**
-     * Return string representation of curve for debugging
+     * Return string representation of curve for debugging.
      *
      * @return string
      */

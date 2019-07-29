@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Assert
+ * Assert.
  *
  * LICENSE
  *
@@ -19,7 +21,7 @@ class MethodDocGenerator
 {
     public function generateChainDocs()
     {
-        $phpFile = __DIR__.'/../lib/Assert/AssertionChain.php';
+        $phpFile = __DIR__ . '/../lib/Assert/AssertionChain.php';
         $skipParameterTest = function (ReflectionParameter $parameter) {
             return 0 === $parameter->getPosition();
         };
@@ -34,9 +36,9 @@ class MethodDocGenerator
      * @param callable|false     $skipParameterTest
      * @param string             $prefix
      *
-     * @return array
-     *
      * @throws \Assert\AssertionFailedException
+     *
+     * @return array
      */
     private function generateMethodDocs($methods, $format, $skipParameterTest, $prefix = '')
     {
@@ -46,7 +48,7 @@ class MethodDocGenerator
             $doc = $method->getDocComment();
             list(, $descriptionLine) = \explode("\n", $doc);
             $shortDescription = \trim(\substr($descriptionLine, 7), '.');
-            $methodName = $prefix.($prefix ? \ucfirst($method->getName()) : $method->getName());
+            $methodName = $prefix . ($prefix ? \ucfirst($method->getName()) : $method->getName());
 
             if (\preg_match('`\* This is an alias of {@see (?P<aliasOf>[^\s\}]++)`sim', $doc, $aliasMatch)) {
                 $shortDescription .= \sprintf('. This is an alias of Assertion::%s()', \trim($aliasMatch['aliasOf'], '(){}'));
@@ -62,7 +64,7 @@ class MethodDocGenerator
                     continue;
                 }
 
-                $parameter = '$'.$methodParameter->getName();
+                $parameter = '$' . $methodParameter->getName();
 
                 $type = \version_compare(PHP_VERSION, '7.0.0') >= 0 ? $methodParameter->getType() : null;
 
@@ -155,13 +157,13 @@ class MethodDocGenerator
         $writtenBytes = \file_put_contents($phpFile, $fileContent);
 
         if (false !== $writtenBytes) {
-            echo 'Generated '.$phpFile.'.'.PHP_EOL;
+            echo 'Generated ' . $phpFile . '.' . PHP_EOL;
         }
     }
 
     public function generateAssertionDocs()
     {
-        $phpFile = __DIR__.'/../lib/Assert/Assertion.php';
+        $phpFile = __DIR__ . '/../lib/Assert/Assertion.php';
         $skipParameterTest = function () {
             return false;
         };
@@ -176,7 +178,7 @@ class MethodDocGenerator
 
     public function generateReadMe()
     {
-        $mdFile = __DIR__.'/../README.md';
+        $mdFile = __DIR__ . '/../README.md';
         $skipParameterTest = function (ReflectionParameter $parameter) {
             return \in_array($parameter->getName(), ['message', 'propertyPath', 'encoding']);
         };
@@ -188,7 +190,7 @@ class MethodDocGenerator
 
     public function generateLazyAssertionDocs()
     {
-        $phpFile = __DIR__.'/../lib/Assert/LazyAssertion.php';
+        $phpFile = __DIR__ . '/../lib/Assert/LazyAssertion.php';
         $skipParameterTest = function (ReflectionParameter $parameter) {
             return 0 === $parameter->getPosition();
         };

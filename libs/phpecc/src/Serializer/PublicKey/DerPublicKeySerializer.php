@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Serializer\PublicKey;
@@ -12,35 +13,30 @@ use Mdanter\Ecc\Serializer\PublicKey\Der\Formatter;
 use Mdanter\Ecc\Serializer\PublicKey\Der\Parser;
 
 /**
- *
  * @link https://tools.ietf.org/html/rfc5480#page-3
  * @todo: review for full spec, should we support all prefixes here?
  */
 class DerPublicKeySerializer implements PublicKeySerializerInterface
 {
-
     const X509_ECDSA_OID = '1.2.840.10045.2.1';
 
     /**
-     *
      * @var GmpMathInterface
      */
     private $adapter;
 
     /**
-     *
      * @var Formatter
      */
     private $formatter;
 
     /**
-     *
      * @var Parser
      */
     private $parser;
 
     /**
-     * @param GmpMathInterface|null $adapter
+     * @param GmpMathInterface|null         $adapter
      * @param PointSerializerInterface|null $pointSerializer
      */
     public function __construct(GmpMathInterface $adapter = null, PointSerializerInterface $pointSerializer = null)
@@ -52,8 +48,8 @@ class DerPublicKeySerializer implements PublicKeySerializerInterface
     }
 
     /**
+     * @param PublicKeyInterface $key
      *
-     * @param  PublicKeyInterface $key
      * @return string
      */
     public function serialize(PublicKeyInterface $key): string
@@ -63,6 +59,7 @@ class DerPublicKeySerializer implements PublicKeySerializerInterface
 
     /**
      * @param PublicKeyInterface $key
+     *
      * @return string
      */
     public function getUncompressedKey(PublicKeyInterface $key): string
@@ -71,7 +68,8 @@ class DerPublicKeySerializer implements PublicKeySerializerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     *
      * @see \Mdanter\Ecc\Serializer\PublicKey\PublicKeySerializerInterface::parse()
      */
     public function parse(string $string): PublicKeyInterface

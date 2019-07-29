@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Random;
@@ -15,6 +16,7 @@ class RandomNumberGenerator implements RandomNumberGeneratorInterface
 
     /**
      * RandomNumberGenerator constructor.
+     *
      * @param GmpMathInterface $adapter
      */
     public function __construct(GmpMathInterface $adapter)
@@ -24,6 +26,7 @@ class RandomNumberGenerator implements RandomNumberGeneratorInterface
 
     /**
      * @param \GMP $max
+     *
      * @return \GMP
      */
     public function generate(\GMP $max): \GMP

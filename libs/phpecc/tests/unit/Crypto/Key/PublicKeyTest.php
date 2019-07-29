@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Crypto\Key;
@@ -24,11 +25,13 @@ class PublicKeyTest extends AbstractTestCase
         $generator384 = EccFactory::getNistCurves($adapter)->generator384();
 
         $tooLarge = $generator384->createPrivateKey()->getPublicKey()->getPoint();
+
         try {
             new PublicKey($adapter, $generator192, $tooLarge);
         } catch (PublicKeyException $e) {
             $this->assertEquals($e->getGenerator(), $generator192);
             $this->assertEquals($e->getPoint(), $tooLarge);
+
             throw $e;
         }
     }
@@ -50,6 +53,7 @@ class PublicKeyTest extends AbstractTestCase
         } catch (PublicKeyException $e) {
             $this->assertEquals($e->getGenerator(), $generator384);
             $this->assertEquals($e->getPoint(), $mismatchPoint);
+
             throw $e;
         }
     }

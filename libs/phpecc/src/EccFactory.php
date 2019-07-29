@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc;
@@ -23,6 +24,7 @@ class EccFactory
      * @param bool $debug [optional] Set to true to get a trace of all mathematical operations
      *
      * @throws \RuntimeException
+     *
      * @return GmpMathInterface
      */
     public static function getAdapter(bool $debug = false): GmpMathInterface
@@ -33,7 +35,8 @@ class EccFactory
     /**
      * Returns a factory to create NIST Recommended curves and generators.
      *
-     * @param  GmpMathInterface $adapter [optional] Defaults to the return value of EccFactory::getAdapter().
+     * @param GmpMathInterface $adapter [optional] Defaults to the return value of EccFactory::getAdapter().
+     *
      * @return NistCurve
      */
     public static function getNistCurves(GmpMathInterface $adapter = null): NistCurve
@@ -44,7 +47,8 @@ class EccFactory
     /**
      * Returns a factory to return SECG Recommended curves and generators.
      *
-     * @param  GmpMathInterface $adapter [optional] Defaults to the return value of EccFactory::getAdapter().
+     * @param GmpMathInterface $adapter [optional] Defaults to the return value of EccFactory::getAdapter().
+     *
      * @return SecgCurve
      */
     public static function getSecgCurves(GmpMathInterface $adapter = null): SecgCurve
@@ -55,11 +59,12 @@ class EccFactory
     /**
      * Creates a new curve from arbitrary parameters.
      *
-     * @param  int              $bitSize
-     * @param  \GMP             $prime
-     * @param  \GMP             $a
-     * @param  \GMP             $b
-     * @param  GmpMathInterface $adapter [optional] Defaults to the return value of EccFactory::getAdapter().
+     * @param int              $bitSize
+     * @param \GMP             $prime
+     * @param \GMP             $a
+     * @param \GMP             $b
+     * @param GmpMathInterface $adapter [optional] Defaults to the return value of EccFactory::getAdapter().
+     *
      * @return CurveFpInterface
      */
     public static function createCurve(int $bitSize, \GMP $prime, \GMP $a, \GMP $b, GmpMathInterface $adapter = null): CurveFpInterface
@@ -68,7 +73,8 @@ class EccFactory
     }
 
     /**
-     * @param  GmpMathInterface $adapter [optional] Defaults to the return value of EccFactory::getAdapteR()
+     * @param GmpMathInterface $adapter [optional] Defaults to the return value of EccFactory::getAdapteR()
+     *
      * @return Signer
      */
     public static function getSigner(GmpMathInterface $adapter = null): Signer

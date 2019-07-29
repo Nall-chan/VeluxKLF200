@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Serializer\PublicKey\Der;
@@ -6,18 +7,17 @@ namespace Mdanter\Ecc\Serializer\PublicKey\Der;
 use FG\ASN1\ASNObject;
 use FG\ASN1\Identifier;
 use FG\ASN1\Universal\Sequence;
+use Mdanter\Ecc\Crypto\Key\PublicKey;
 use Mdanter\Ecc\Crypto\Key\PublicKeyInterface;
 use Mdanter\Ecc\Math\GmpMathInterface;
-use Mdanter\Ecc\Serializer\Util\CurveOidMapper;
 use Mdanter\Ecc\Primitives\GeneratorPoint;
-use Mdanter\Ecc\Serializer\PublicKey\DerPublicKeySerializer;
 use Mdanter\Ecc\Serializer\Point\PointSerializerInterface;
 use Mdanter\Ecc\Serializer\Point\UncompressedPointSerializer;
-use Mdanter\Ecc\Crypto\Key\PublicKey;
+use Mdanter\Ecc\Serializer\PublicKey\DerPublicKeySerializer;
+use Mdanter\Ecc\Serializer\Util\CurveOidMapper;
 
 class Parser
 {
-
     /**
      * @var GmpMathInterface
      */
@@ -30,7 +30,8 @@ class Parser
 
     /**
      * Parser constructor.
-     * @param GmpMathInterface $adapter
+     *
+     * @param GmpMathInterface              $adapter
      * @param PointSerializerInterface|null $pointSerializer
      */
     public function __construct(GmpMathInterface $adapter, PointSerializerInterface $pointSerializer = null)
@@ -41,8 +42,10 @@ class Parser
 
     /**
      * @param string $binaryData
-     * @return PublicKeyInterface
+     *
      * @throws \FG\ASN1\Exception\ParserException
+     *
+     * @return PublicKeyInterface
      */
     public function parse(string $binaryData): PublicKeyInterface
     {
@@ -99,7 +102,8 @@ class Parser
 
     /**
      * @param GeneratorPoint $generator
-     * @param string $data
+     * @param string         $data
+     *
      * @return PublicKeyInterface
      */
     public function parseKey(GeneratorPoint $generator, string $data): PublicKeyInterface

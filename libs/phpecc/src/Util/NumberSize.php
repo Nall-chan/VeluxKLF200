@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Util;
@@ -7,10 +8,10 @@ use Mdanter\Ecc\Math\GmpMathInterface;
 
 class NumberSize
 {
-
     /**
      * @param GmpMathInterface $adapter
      * @param \GMP             $x
+     *
      * @return float
      */
     public static function getCeiledByteSize(GmpMathInterface $adapter, \GMP $x): float
@@ -22,6 +23,7 @@ class NumberSize
     /**
      * @param GmpMathInterface $adapter
      * @param \GMP             $x
+     *
      * @return float
      */
     public static function getFlooredByteSize(GmpMathInterface $adapter, \GMP $x): float
@@ -33,8 +35,9 @@ class NumberSize
     /**
      * Returns the number of minimum required bytes to store a given number. Non-significant upper bits are not counted.
      *
-     * @param  GmpMathInterface $adapter
-     * @param  \GMP             $x
+     * @param GmpMathInterface $adapter
+     * @param \GMP             $x
+     *
      * @return int
      *
      * @link https://www.openssl.org/docs/crypto/BN_num_bytes.html
@@ -48,8 +51,9 @@ class NumberSize
     /**
      * Returns the number of bits used to store this number. Non-significant upper bits are not counted.
      *
-     * @param  GmpMathInterface $adapter
-     * @param  \GMP             $x
+     * @param GmpMathInterface $adapter
+     * @param \GMP             $x
+     *
      * @return int
      *
      * @link https://www.openssl.org/docs/crypto/BN_num_bytes.html
@@ -67,6 +71,6 @@ class NumberSize
             $log2++;
         }
 
-        return $log2 ;
+        return $log2;
     }
 }

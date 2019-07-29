@@ -1,10 +1,12 @@
 <?php
 
-require __DIR__ . "/../vendor/autoload.php";
+declare(strict_types=1);
+
+require __DIR__ . '/../vendor/autoload.php';
 
 use Mdanter\Ecc\EccFactory;
-use Mdanter\Ecc\Serializer\PrivateKey\PemPrivateKeySerializer;
 use Mdanter\Ecc\Serializer\PrivateKey\DerPrivateKeySerializer;
+use Mdanter\Ecc\Serializer\PrivateKey\PemPrivateKeySerializer;
 
 $adapter = EccFactory::getAdapter();
 $generator = EccFactory::getNistCurves()->generator384();

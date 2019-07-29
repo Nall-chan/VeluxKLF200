@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Math;
@@ -31,14 +32,14 @@ class NumberTheoryTest extends AbstractTestCase
         // todo: in the future, turn these into data providers instead
         // file containing a json array of {compressed=>'', decompressed=>''} values
         // of compressed and uncompressed ECDSA public keys (testing secp256k1 curve)
-        $file_comp = TEST_DATA_DIR.'/compression.json';
+        $file_comp = TEST_DATA_DIR . '/compression.json';
 
-        if (! file_exists($file_comp)) {
+        if (!file_exists($file_comp)) {
             $this->fail('Key compression input data not found');
         }
 
-        $file_sqrt = TEST_DATA_DIR.'/square_root_mod_p.json';
-        if (! file_exists($file_sqrt)) {
+        $file_sqrt = TEST_DATA_DIR . '/square_root_mod_p.json';
+        if (!file_exists($file_sqrt)) {
             $this->fail('Square root input data not found');
         }
         $this->generator = EccFactory::getSecgCurves()->generator256k1();
@@ -49,7 +50,7 @@ class NumberTheoryTest extends AbstractTestCase
 
     public function getInvalidRootsProvider(): array
     {
-        $file_sqrt = TEST_DATA_DIR.'/square_root_mod_p.json';
+        $file_sqrt = TEST_DATA_DIR . '/square_root_mod_p.json';
         $sqrt_data = json_decode(file_get_contents($file_sqrt));
         $fixtures = [];
         foreach ($sqrt_data->no_root as $r) {
@@ -61,6 +62,7 @@ class NumberTheoryTest extends AbstractTestCase
     /**
      * @dataProvider getInvalidRootsProvider
      * @expectedException \Mdanter\Ecc\Exception\SquareRootException
+     *
      * @param string $a
      * @param string $p
      */
@@ -135,7 +137,7 @@ class NumberTheoryTest extends AbstractTestCase
             $y_coordinate = str_pad($y_coordinate, 64, '0', STR_PAD_LEFT);
 
             // Successfully regenerated uncompressed ECDSA key from the x coordinate and the parity byte.
-            $this->assertEquals('04'.$x_coordinate.$y_coordinate, $o->decompressed);
+            $this->assertEquals('04' . $x_coordinate . $y_coordinate, $o->decompressed);
         }
     }
 
@@ -157,7 +159,7 @@ class NumberTheoryTest extends AbstractTestCase
 
             // y % 2 == 0       - true: y is even(02) / false: y is odd(03)
             $mod = $math->mod(gmp_init($y, 16), gmp_init(2, 10));
-            $compressed = '0'.(($math->equals($mod, gmp_init(0))) ? '2' : '3').$x;
+            $compressed = '0' . (($math->equals($mod, gmp_init(0))) ? '2' : '3') . $x;
 
             // Check that the mod function reported the parity for the y value.
             $this->assertSame($compressed, $o->compressed);

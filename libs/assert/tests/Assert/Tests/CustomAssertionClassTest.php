@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Assert
+ * Assert.
  *
  * LICENSE
  *
@@ -52,8 +54,7 @@ class CustomAssertionClassTest extends TestCase
     {
         Fixtures\CustomAssert::lazy()
             ->that('foo', 'foo')->integer()
-            ->verifyNow()
-        ;
+            ->verifyNow();
     }
 
     /**
@@ -64,8 +65,7 @@ class CustomAssertionClassTest extends TestCase
         Fixtures\CustomAssert::lazy()
             ->that('foo', 'foo')->string()
             ->that('bar', 'bar')->integer()
-            ->verifyNow()
-        ;
+            ->verifyNow();
     }
 
     public function testThatCustomLazyAssertionUsesCustomAssertion()
@@ -73,8 +73,7 @@ class CustomAssertionClassTest extends TestCase
         $string = 's' . \uniqid();
         Fixtures\CustomAssert::lazy()
             ->that($string, 'foo')->string()
-            ->verifyNow()
-        ;
+            ->verifyNow();
 
         $this->assertSame([['string', $string]], CustomAssertion::getCalls());
     }
@@ -84,8 +83,7 @@ class CustomAssertionClassTest extends TestCase
         try {
             Fixtures\CustomAssert::lazy()
                 ->that('foo', 'foo')->integer()
-                ->verifyNow()
-            ;
+                ->verifyNow();
         } catch (LazyAssertionException $ex) {
             $this->assertContainsOnlyInstancesOf(Fixtures\CustomException::class, $ex->getErrorExceptions());
         }
@@ -100,8 +98,7 @@ class CustomAssertionClassTest extends TestCase
         Fixtures\CustomAssert::lazy()
             ->that('foo', 'foo')->tryAll()->integer()->isArray()
             ->that(123, 'bar')->tryAll()->string()->isArray()
-            ->verifyNow()
-        ;
+            ->verifyNow();
     }
 
     /**
@@ -114,7 +111,6 @@ class CustomAssertionClassTest extends TestCase
             ->tryAll()
             ->that('foo', 'foo')->integer()->isArray()
             ->that(123, 'bar')->string()->isArray()
-            ->verifyNow()
-        ;
+            ->verifyNow();
     }
 }

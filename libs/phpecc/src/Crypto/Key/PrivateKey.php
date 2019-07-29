@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Crypto\Key;
 
-/**
+/*
  * *********************************************************************
  * Copyright (C) 2012 Matyas Danter
  *
@@ -32,7 +33,6 @@ use Mdanter\Ecc\Crypto\EcDH\EcDHInterface;
 use Mdanter\Ecc\Math\GmpMathInterface;
 use Mdanter\Ecc\Primitives\CurveFpInterface;
 use Mdanter\Ecc\Primitives\GeneratorPoint;
-use Mdanter\Ecc\Primitives\PointInterface;
 
 /**
  * This class serves as public - private key exchange for signature verification.
@@ -56,8 +56,8 @@ class PrivateKey implements PrivateKeyInterface
 
     /**
      * @param GmpMathInterface $adapter
-     * @param GeneratorPoint $generator
-     * @param \GMP $secretMultiplier
+     * @param GeneratorPoint   $generator
+     * @param \GMP             $secretMultiplier
      */
     public function __construct(GmpMathInterface $adapter, GeneratorPoint $generator, \GMP $secretMultiplier)
     {
@@ -67,7 +67,8 @@ class PrivateKey implements PrivateKeyInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     *
      * @see \Mdanter\Ecc\Crypto\Key\PrivateKeyInterface::getPublicKey()
      */
     public function getPublicKey(): PublicKeyInterface
@@ -76,7 +77,8 @@ class PrivateKey implements PrivateKeyInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     *
      * @see \Mdanter\Ecc\Crypto\Key\PrivateKeyInterface::getPoint()
      */
     public function getPoint(): GeneratorPoint
@@ -85,7 +87,8 @@ class PrivateKey implements PrivateKeyInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     *
      * @see \Mdanter\Ecc\Crypto\Key\PrivateKeyInterface::getCurve()
      */
     public function getCurve(): CurveFpInterface
@@ -94,7 +97,8 @@ class PrivateKey implements PrivateKeyInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     *
      * @see \Mdanter\Ecc\Crypto\Key\PrivateKeyInterface::getSecret()
      */
     public function getSecret(): \GMP
@@ -103,7 +107,8 @@ class PrivateKey implements PrivateKeyInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     *
      * @see \Mdanter\Ecc\Crypto\Key\PrivateKeyInterface::createExchange()
      */
     public function createExchange(PublicKeyInterface $recipient = null): EcDHInterface

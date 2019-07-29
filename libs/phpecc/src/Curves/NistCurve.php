@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Curves;
@@ -10,7 +11,7 @@ use Mdanter\Ecc\Random\RandomNumberGeneratorInterface;
 
 /**
  * *********************************************************************
- * Copyright (C) 2012 Matyas Danter
+ * Copyright (C) 2012 Matyas Danter.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the "Software"),
@@ -35,11 +36,10 @@ use Mdanter\Ecc\Random\RandomNumberGeneratorInterface;
 /**
  * This class encapsulates the NIST recommended curves
  * - fields are Mersenne primes, i.e.
- * for some p, Mersenne_prine = 2^p - 1
+ * for some p, Mersenne_prine = 2^p - 1.
  */
 class NistCurve
 {
-
     const NAME_P192 = 'nistp192';
     const NAME_P224 = 'nistp224';
     const NAME_P256 = 'nistp256';
@@ -77,7 +77,8 @@ class NistCurve
     /**
      * Returns an NIST P-192 generator.
      *
-     * @param  RandomNumberGeneratorInterface $randomGenerator
+     * @param RandomNumberGeneratorInterface $randomGenerator
+     *
      * @return GeneratorPoint
      */
     public function generator192(RandomNumberGeneratorInterface $randomGenerator = null): GeneratorPoint
@@ -92,7 +93,7 @@ class NistCurve
     }
 
     /**
-     * Returns an NIST P-224 curve
+     * Returns an NIST P-224 curve.
      *
      * @return NamedCurveFp
      */
@@ -109,7 +110,8 @@ class NistCurve
     /**
      * Returns an NIST P-224 generator.
      *
-     * @param  RandomNumberGeneratorInterface $randomGenerator
+     * @param RandomNumberGeneratorInterface $randomGenerator
+     *
      * @return GeneratorPoint
      */
     public function generator224(RandomNumberGeneratorInterface $randomGenerator = null): GeneratorPoint
@@ -141,7 +143,8 @@ class NistCurve
     /**
      * Returns an NIST P-256 generator.
      *
-     * @param  RandomNumberGeneratorInterface $randomGenerator
+     * @param RandomNumberGeneratorInterface $randomGenerator
+     *
      * @return GeneratorPoint
      */
     public function generator256(RandomNumberGeneratorInterface $randomGenerator = null): GeneratorPoint
@@ -173,7 +176,8 @@ class NistCurve
     /**
      * Returns an NIST P-384 generator.
      *
-     * @param  RandomNumberGeneratorInterface $randomGenerator
+     * @param RandomNumberGeneratorInterface $randomGenerator
+     *
      * @return GeneratorPoint
      */
     public function generator384(RandomNumberGeneratorInterface $randomGenerator = null): GeneratorPoint
@@ -205,7 +209,8 @@ class NistCurve
     /**
      * Returns an NIST P-521 generator.
      *
-     * @param  RandomNumberGeneratorInterface $randomGenerator
+     * @param RandomNumberGeneratorInterface $randomGenerator
+     *
      * @return GeneratorPoint
      */
     public function generator521(RandomNumberGeneratorInterface $randomGenerator = null): GeneratorPoint

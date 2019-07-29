@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 function buildPath()
 {
     return implode(DIRECTORY_SEPARATOR, func_get_args());
@@ -10,7 +12,7 @@ gc_disable();
 define('TEST_DATA_DIR', buildPath(__DIR__, 'data'));
 
 if (getenv('MATH_LIB') === false) {
-    echo 'MATH_LIB env var is not defined, defaulting to GMP'.PHP_EOL;
+    echo 'MATH_LIB env var is not defined, defaulting to GMP' . PHP_EOL;
     define('MATH_LIB', 'gmp');
 } else {
     define('MATH_LIB', getenv('MATH_LIB'));

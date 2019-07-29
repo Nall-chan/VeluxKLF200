@@ -6,7 +6,6 @@ namespace Mdanter\Ecc\WycheProof;
 
 use FG\ASN1\Exception\ParserException;
 use Mdanter\Ecc\Curves\CurveFactory;
-use Mdanter\Ecc\Curves\NistCurve;
 use Mdanter\Ecc\Exception\ExchangeException;
 use Mdanter\Ecc\Exception\PointNotOnCurveException;
 use Mdanter\Ecc\Exception\PointRecoveryException;
@@ -37,10 +36,9 @@ class EcdhTest extends AbstractTestCase
         '1.3.36.3.3.2.8.1.1.14',
     ];
 
-
     public function getEcDHFixtures(): array
     {
-        $fixtures = json_decode($this->importFile("import/wycheproof/testvectors/ecdh_test.json"), true);
+        $fixtures = json_decode($this->importFile('import/wycheproof/testvectors/ecdh_test.json'), true);
         return $this->filterFixtures($fixtures, $this->getCurvesList());
     }
 
@@ -62,16 +60,16 @@ class EcdhTest extends AbstractTestCase
 
             foreach ($fixture['tests'] as $test) {
                 // Library doesn't have all code paths available right now
-                if (!empty(array_intersect(["UnnamedCurve"], $test['flags']))) {
+                if (!empty(array_intersect(['UnnamedCurve'], $test['flags']))) {
                     continue;
                 }
 
                 // Library doesn't have all code paths available right now
-                if ($test['public'] === "3052301406072a8648ce3d020106092b2403030208010105033a00046caa3d6d86f792df7b29e41eb4203150f60f4fca10f57d0b2454abfb201f9f7e6dcbb92bdcfb9240dc86bcaeaf157c77bca22b2ec86ee8d6") {
+                if ($test['public'] === '3052301406072a8648ce3d020106092b2403030208010105033a00046caa3d6d86f792df7b29e41eb4203150f60f4fca10f57d0b2454abfb201f9f7e6dcbb92bdcfb9240dc86bcaeaf157c77bca22b2ec86ee8d6') {
                     continue;
                 }
 
-                if (in_array("CompressedPoint", $test['flags'], true)) {
+                if (in_array('CompressedPoint', $test['flags'], true)) {
                     $pubKeySerializer = new DerPublicKeySerializer($math, new CompressedPointSerializer($math));
                 } else {
                     $pubKeySerializer = new DerPublicKeySerializer($math, new UncompressedPointSerializer());
@@ -118,7 +116,7 @@ class EcdhTest extends AbstractTestCase
     public function getSpecificFixtures(string $curve): array
     {
         $fixtures = json_decode($this->importFile("import/wycheproof/testvectors/ecdh_{$curve}_test.json"), true);
-        $filtered =  $this->filterFixtures($fixtures);
+        $filtered = $this->filterFixtures($fixtures);
 
         return $filtered;
     }
@@ -133,7 +131,7 @@ class EcdhTest extends AbstractTestCase
 
     public function getSecp224r1Fixtures()
     {
-        return $this->getSpecificFixtures("secp224r1");
+        return $this->getSpecificFixtures('secp224r1');
     }
 
     /**
@@ -146,7 +144,7 @@ class EcdhTest extends AbstractTestCase
 
     public function getSecp256r1Fixtures()
     {
-        return $this->getSpecificFixtures("secp256r1");
+        return $this->getSpecificFixtures('secp256r1');
     }
 
     /**
@@ -159,7 +157,7 @@ class EcdhTest extends AbstractTestCase
 
     public function getSecp256k1Fixtures()
     {
-        return $this->getSpecificFixtures("secp256k1");
+        return $this->getSpecificFixtures('secp256k1');
     }
 
     /**
@@ -172,7 +170,7 @@ class EcdhTest extends AbstractTestCase
 
     public function getSecp384r1Fixtures()
     {
-        return $this->getSpecificFixtures("secp384r1");
+        return $this->getSpecificFixtures('secp384r1');
     }
 
     /**
@@ -185,7 +183,7 @@ class EcdhTest extends AbstractTestCase
 
     public function getSecp521r1Fixtures()
     {
-        return $this->getSpecificFixtures("secp521r1");
+        return $this->getSpecificFixtures('secp521r1');
     }
 
     /**
@@ -201,7 +199,7 @@ class EcdhTest extends AbstractTestCase
         $generator = CurveFactory::getGeneratorByName($curveName);
         $curve = $generator->getCurve();
         $math = new GmpMath();
-        if (in_array("CompressedPoint", $flags, true)) {
+        if (in_array('CompressedPoint', $flags, true)) {
             $pubKeySerializer = new DerPublicKeySerializer($math, new CompressedPointSerializer($math));
         } else {
             $pubKeySerializer = new DerPublicKeySerializer($math, new UncompressedPointSerializer());
@@ -210,13 +208,13 @@ class EcdhTest extends AbstractTestCase
         try {
             $pubKey = $pubKeySerializer->parse(hex2bin($public));
         } catch (PointNotOnCurveException $e) {
-            $this->assertTrue($result !== "valid");
+            $this->assertTrue($result !== 'valid');
             return;
         } catch (ParserException $e) {
-            $this->assertTrue($result !== "valid");
+            $this->assertTrue($result !== 'valid');
             return;
         } catch (PointRecoveryException $e) {
-            $this->assertTrue($result === "invalid");
+            $this->assertTrue($result === 'invalid');
             return;
         } catch (UnsupportedCurveException $e) {
             $this->markTestSkipped("Unsupported curve {$e->getOid()} in test case {$tcId}");
@@ -224,11 +222,11 @@ class EcdhTest extends AbstractTestCase
         } catch (\RuntimeException $e) {
             // asn1 encoding mostly...
             // todo: get a better error for this
-            $this->assertTrue($result !== "invalid");
+            $this->assertTrue($result !== 'invalid');
             return;
         } catch (\InvalidArgumentException $e) {
             // uncompressed point serializer, wrong prefix
-            $this->assertTrue($result !== "valid");
+            $this->assertTrue($result !== 'valid');
             return;
         }
 
@@ -236,16 +234,16 @@ class EcdhTest extends AbstractTestCase
             $privateKey = $generator->getPrivateKeyFrom(gmp_init($private, 16));
             $exchange = $privateKey->createExchange($pubKey);
             $sharedSecret = $exchange->calculateSharedKey();
-            $res = bin2hex($math->intToFixedSizeString($sharedSecret, (int)ceil($curve->getSize()/8)));
-            if ($result === "invalid") {
-                $this->fail("Computed ECDH with invalid parameters");
+            $res = bin2hex($math->intToFixedSizeString($sharedSecret, (int) ceil($curve->getSize() / 8)));
+            if ($result === 'invalid') {
+                $this->fail('Computed ECDH with invalid parameters');
             }
 
-            $this->assertEquals($shared, $res, "shared secret should be correct");
+            $this->assertEquals($shared, $res, 'shared secret should be correct');
         } catch (PointNotOnCurveException $e) {
-            $this->assertTrue($result === "invalid");
+            $this->assertTrue($result === 'invalid');
         } catch (ExchangeException $e) {
-            $this->assertTrue($result === "invalid");
+            $this->assertTrue($result === 'invalid');
         } catch (\Exception $e) {
             throw $e;
         }

@@ -36,16 +36,16 @@ class EcdsaTest extends AbstractTestCase
             $hasher = $this->getHasher($group['sha']);
 
             if (!array_key_exists('tests', $group)) {
-                throw new \RuntimeException("Missing tests key");
+                throw new \RuntimeException('Missing tests key');
             }
             foreach ($group['tests'] as $test) {
                 if (!empty(array_intersect($test['flags'], $disabledFlags))) {
                     continue;
                 }
-                if ($test['comment'] === "long form encoding of length") {
+                if ($test['comment'] === 'long form encoding of length') {
                     continue;
                 }
-                if ($test['comment'] === "length contains leading 0") {
+                if ($test['comment'] === 'length contains leading 0') {
                     continue;
                 }
                 $results[] = [
@@ -67,14 +67,14 @@ class EcdsaTest extends AbstractTestCase
     private function readSpecificSet(string $curveName, string $hasherName): array
     {
         $fixtures = json_decode($this->importFile("import/wycheproof/testvectors/ecdsa_{$curveName}_{$hasherName}_test.json"), true);
-        $disabledFlags = ["MissingZero"];
+        $disabledFlags = ['MissingZero'];
         return $this->filterSet($fixtures, $this->getCurvesList(), $disabledFlags);
     }
 
     public function getEcdsaTestVectors(): array
     {
-        $fixtures = json_decode($this->importFile("import/wycheproof/testvectors/ecdsa_test.json"), true);
-        $disabledFlags = ["MissingZero"];
+        $fixtures = json_decode($this->importFile('import/wycheproof/testvectors/ecdsa_test.json'), true);
+        $disabledFlags = ['MissingZero'];
         return $this->filterSet($fixtures, $this->getCurvesList(), $disabledFlags);
     }
 
@@ -88,7 +88,7 @@ class EcdsaTest extends AbstractTestCase
 
     public function getEcdsaSecp224r1Sha224TestVectors(): array
     {
-        return $this->readSpecificSet("secp224r1", "sha224");
+        return $this->readSpecificSet('secp224r1', 'sha224');
     }
 
     /**
@@ -101,7 +101,7 @@ class EcdsaTest extends AbstractTestCase
 
     public function getEcdsaSecp224r1Sha256TestVectors(): array
     {
-        return $this->readSpecificSet("secp224r1", "sha256");
+        return $this->readSpecificSet('secp224r1', 'sha256');
     }
 
     /**
@@ -114,7 +114,7 @@ class EcdsaTest extends AbstractTestCase
 
     public function getEcdsaSecp224r1Sha512TestVectors(): array
     {
-        return $this->readSpecificSet("secp224r1", "sha512");
+        return $this->readSpecificSet('secp224r1', 'sha512');
     }
 
     /**
@@ -127,7 +127,7 @@ class EcdsaTest extends AbstractTestCase
 
     public function getEcdsaSecp256k1Sha256TestVectors(): array
     {
-        return $this->readSpecificSet("secp256k1", "sha256");
+        return $this->readSpecificSet('secp256k1', 'sha256');
     }
 
     /**
@@ -140,7 +140,7 @@ class EcdsaTest extends AbstractTestCase
 
     public function getEcdsaSecp256k1Sha512TestVectors(): array
     {
-        return $this->readSpecificSet("secp256k1", "sha512");
+        return $this->readSpecificSet('secp256k1', 'sha512');
     }
 
     /**
@@ -153,8 +153,9 @@ class EcdsaTest extends AbstractTestCase
 
     public function getEcdsaSecp256r1Sha256TestVectors(): array
     {
-        return $this->readSpecificSet("secp256r1", "sha256");
+        return $this->readSpecificSet('secp256r1', 'sha256');
     }
+
     /**
      * @dataProvider getEcdsaSecp256r1Sha256TestVectors
      */
@@ -165,7 +166,7 @@ class EcdsaTest extends AbstractTestCase
 
     public function getEcdsaSecp256r1Sha512TestVectors(): array
     {
-        return $this->readSpecificSet("secp256r1", "sha512");
+        return $this->readSpecificSet('secp256r1', 'sha512');
     }
 
     /**
@@ -178,7 +179,7 @@ class EcdsaTest extends AbstractTestCase
 
     public function getEcdsaSecp384r1Sha256TestVectors(): array
     {
-        return $this->readSpecificSet("secp384r1", "sha384");
+        return $this->readSpecificSet('secp384r1', 'sha384');
     }
 
     /**
@@ -191,7 +192,7 @@ class EcdsaTest extends AbstractTestCase
 
     public function getEcdsaSecp384r1Sha512TestVectors(): array
     {
-        return $this->readSpecificSet("secp384r1", "sha512");
+        return $this->readSpecificSet('secp384r1', 'sha512');
     }
 
     /**
@@ -204,7 +205,7 @@ class EcdsaTest extends AbstractTestCase
 
     public function getEcdsaSecp521r1Sha512TestVectors(): array
     {
-        return $this->readSpecificSet("secp521r1", "sha512");
+        return $this->readSpecificSet('secp521r1', 'sha512');
     }
 
     /**
@@ -241,9 +242,9 @@ class EcdsaTest extends AbstractTestCase
         }
 
         if (!$verified && $result === 'valid') {
-            $this->fail("Signature not verified");
-        } else if ($verified && $result === "invalid") {
-            $this->fail("Signature verified");
+            $this->fail('Signature not verified');
+        } elseif ($verified && $result === 'invalid') {
+            $this->fail('Signature verified');
         }
         $this->assertEquals($result !== 'invalid', $verified);
     }

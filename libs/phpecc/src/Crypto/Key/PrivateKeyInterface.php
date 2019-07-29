@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Crypto\Key;
 
-/**
+/*
  * *********************************************************************
  * Copyright (C) 2012 Matyas Danter
  *
@@ -35,7 +36,6 @@ use Mdanter\Ecc\Primitives\GeneratorPoint;
  */
 interface PrivateKeyInterface
 {
-
     /**
      * @return PublicKeyInterface
      */
@@ -52,7 +52,8 @@ interface PrivateKeyInterface
     public function getSecret(): \GMP;
 
     /**
-     * @param  PublicKeyInterface $recipient
+     * @param PublicKeyInterface $recipient
+     *
      * @return EcDHInterface
      */
     public function createExchange(PublicKeyInterface $recipient): EcDHInterface;

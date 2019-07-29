@@ -1,9 +1,9 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Curves;
 
-use Mdanter\Ecc\Exception\UnknownCurveException;
 use Mdanter\Ecc\Exception\UnsupportedCurveException;
 use Mdanter\Ecc\Math\GmpMathInterface;
 use Mdanter\Ecc\Math\MathAdapterFactory;
@@ -13,6 +13,7 @@ class CurveFactory
 {
     /**
      * @param string $name
+     *
      * @return NamedCurveFp
      */
     public static function getCurveByName(string $name): NamedCurveFp
@@ -45,12 +46,14 @@ class CurveFactory
             default:
                 $error = new UnsupportedCurveException('Unknown curve.');
                 $error->setCurveName($name);
+
                 throw $error;
         }
     }
 
     /**
      * @param string $name
+     *
      * @return GeneratorPoint
      */
     public static function getGeneratorByName(string $name): GeneratorPoint
@@ -83,12 +86,14 @@ class CurveFactory
             default:
                 $error = new UnsupportedCurveException('Unknown generator.');
                 $error->setCurveName($name);
+
                 throw $error;
         }
     }
 
     /**
      * @param GmpMathInterface $math
+     *
      * @return NistCurve
      */
     private static function getNistFactory(GmpMathInterface $math): NistCurve
@@ -98,6 +103,7 @@ class CurveFactory
 
     /**
      * @param GmpMathInterface $math
+     *
      * @return SecgCurve
      */
     private static function getSecpFactory(GmpMathInterface $math): SecgCurve

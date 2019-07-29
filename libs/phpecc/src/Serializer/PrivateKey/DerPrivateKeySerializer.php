@@ -1,28 +1,28 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Serializer\PrivateKey;
 
 use FG\ASN1\ASNObject;
-use FG\ASN1\Universal\Sequence;
-use FG\ASN1\Universal\Integer;
+use FG\ASN1\ExplicitlyTaggedObject;
 use FG\ASN1\Universal\BitString;
+use FG\ASN1\Universal\Integer;
 use FG\ASN1\Universal\OctetString;
+use FG\ASN1\Universal\Sequence;
 use Mdanter\Ecc\Crypto\Key\PrivateKeyInterface;
 use Mdanter\Ecc\Math\GmpMathInterface;
 use Mdanter\Ecc\Math\MathAdapterFactory;
-use Mdanter\Ecc\Serializer\Util\CurveOidMapper;
 use Mdanter\Ecc\Serializer\PublicKey\DerPublicKeySerializer;
-use FG\ASN1\ExplicitlyTaggedObject;
+use Mdanter\Ecc\Serializer\Util\CurveOidMapper;
 
 /**
- * PEM Private key formatter
+ * PEM Private key formatter.
  *
  * @link https://tools.ietf.org/html/rfc5915
  */
 class DerPrivateKeySerializer implements PrivateKeySerializerInterface
 {
-
     const VERSION = 1;
 
     /**
@@ -46,7 +46,8 @@ class DerPrivateKeySerializer implements PrivateKeySerializerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     *
      * @see \Mdanter\Ecc\Serializer\PrivateKey\PrivateKeySerializerInterface::serialize()
      */
     public function serialize(PrivateKeyInterface $key): string
@@ -63,6 +64,7 @@ class DerPrivateKeySerializer implements PrivateKeySerializerInterface
 
     /**
      * @param PrivateKeyInterface $key
+     *
      * @return BitString
      */
     private function encodePubKey(PrivateKeyInterface $key): BitString
@@ -74,6 +76,7 @@ class DerPrivateKeySerializer implements PrivateKeySerializerInterface
 
     /**
      * @param PrivateKeyInterface $key
+     *
      * @return string
      */
     private function formatKey(PrivateKeyInterface $key): string
@@ -82,15 +85,17 @@ class DerPrivateKeySerializer implements PrivateKeySerializerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
+     *
      * @see \Mdanter\Ecc\Serializer\PrivateKey\PrivateKeySerializerInterface::parse()
+     *
      * @throws \FG\ASN1\Exception\ParserException
      */
     public function parse(string $data): PrivateKeyInterface
     {
         $asnObject = ASNObject::fromBinary($data);
 
-        if (! ($asnObject instanceof Sequence) || $asnObject->getNumberofChildren() !== 4) {
+        if (!($asnObject instanceof Sequence) || $asnObject->getNumberofChildren() !== 4) {
             throw new \RuntimeException('Invalid data.');
         }
 

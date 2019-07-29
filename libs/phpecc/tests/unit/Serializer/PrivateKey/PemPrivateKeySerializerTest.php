@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Serializer\PrivateKey;
@@ -13,7 +14,7 @@ class PemPrivateKeySerializerTest extends AbstractTestCase
 {
     public function testReadsDer()
     {
-        $der = file_get_contents(__DIR__ . "/../../../data/openssl-secp256r1.pem");
+        $der = file_get_contents(__DIR__ . '/../../../data/openssl-secp256r1.pem');
         $adapter = EccFactory::getAdapter();
         $derSerializer = new DerPrivateKeySerializer($adapter);
         $pemSerializer = new PemPrivateKeySerializer($derSerializer);
@@ -30,8 +31,8 @@ class PemPrivateKeySerializerTest extends AbstractTestCase
         $derPrivSerializer = new DerPrivateKeySerializer($adapter);
         $pemSerializer = new PemPrivateKeySerializer($derPrivSerializer);
 
-        $serialized = $pemSerializer ->serialize($key);
-        $parsed = $pemSerializer ->parse($serialized);
+        $serialized = $pemSerializer->serialize($key);
+        $parsed = $pemSerializer->parse($serialized);
         $this->assertTrue($adapter->equals($parsed->getSecret(), $key->getSecret()));
     }
 }

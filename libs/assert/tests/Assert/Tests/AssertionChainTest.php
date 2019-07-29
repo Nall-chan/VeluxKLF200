@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Assert
+ * Assert.
  *
  * LICENSE
  *
@@ -110,10 +112,10 @@ class AssertionChainTest extends TestCase
     public function provideDataToTestThatSetAssertionClassNameWillNotAcceptInvalidAssertionClasses()
     {
         return [
-            'null' => [null],
-            'string' => ['foo'],
-            'array' => [[]],
-            'object' => [new \stdClass()],
+            'null'        => [null],
+            'string'      => ['foo'],
+            'array'       => [[]],
+            'object'      => [new \stdClass()],
             'other class' => [__CLASS__],
         ];
     }

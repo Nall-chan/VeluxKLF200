@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Util;
@@ -6,9 +7,10 @@ namespace Mdanter\Ecc\Util;
 class BinaryString
 {
     /**
-     * Multi-byte-safe string length calculation
+     * Multi-byte-safe string length calculation.
      *
      * @param string $str
+     *
      * @return int
      */
     public static function length(string $str): int
@@ -27,11 +29,12 @@ class BinaryString
     }
 
     /**
-     * Multi-byte-safe substring calculation
+     * Multi-byte-safe substring calculation.
      *
      * @param string $str
-     * @param int $start
-     * @param int $length (optional)
+     * @param int    $start
+     * @param int    $length (optional)
+     *
      * @return string
      */
     public static function substring(string $str, int $start = 0, int $length = null): string
@@ -50,9 +53,9 @@ class BinaryString
         }
         return substr($str, $start);
     }
-    
+
     /**
-     * Equivalent to hash_equals() in PHP 5.6
+     * Equivalent to hash_equals() in PHP 5.6.
      *
      * @param string $knownString
      * @param string $userString

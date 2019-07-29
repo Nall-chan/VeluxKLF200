@@ -1,26 +1,26 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Curves;
 
 use Mdanter\Ecc\Crypto\Signature\Signature;
+use Mdanter\Ecc\Crypto\Signature\Signer;
 use Mdanter\Ecc\Crypto\Signature\SignHasher;
+use Mdanter\Ecc\Curves\CurveFactory;
+use Mdanter\Ecc\Primitives\GeneratorPoint;
 use Mdanter\Ecc\Random\RandomGeneratorFactory;
-use Mdanter\Ecc\Random\RandomNumberGeneratorInterface;
 use Mdanter\Ecc\Serializer\Point\CompressedPointSerializer;
 use Mdanter\Ecc\Serializer\Point\UncompressedPointSerializer;
 use Mdanter\Ecc\Tests\AbstractTestCase;
-use Mdanter\Ecc\Primitives\GeneratorPoint;
 use Symfony\Component\Yaml\Yaml;
-use Mdanter\Ecc\Curves\CurveFactory;
-use Mdanter\Ecc\Crypto\Signature\Signer;
 
 class SpecBasedCurveTest extends AbstractTestCase
 {
-    const CAUSE_MSG = "message"; // 1
-    const CAUSE_R = "r"; // 2
-    const CAUSE_S = "s"; // 3
-    const CAUSE_Q = "publicKey"; // 4
+    const CAUSE_MSG = 'message'; // 1
+    const CAUSE_R = 'r'; // 2
+    const CAUSE_S = 's'; // 3
+    const CAUSE_Q = 'publicKey'; // 4
     const DEFAULT_COVERAGE_SHARDS = 5;
     /**
      * @var array
@@ -49,6 +49,7 @@ class SpecBasedCurveTest extends AbstractTestCase
     /**
      * @param Yaml $yaml
      * @param $fileName
+     *
      * @return mixed
      */
     public function readFile(Yaml $yaml, $fileName)
@@ -65,6 +66,7 @@ class SpecBasedCurveTest extends AbstractTestCase
 
     /**
      * @param string $fixtureName
+     *
      * @return array
      */
     public function readTestFixture($fixtureName)
@@ -103,7 +105,7 @@ TEXT
             }
 
             $filesWorth = [
-                'name' => $data['name'],
+                'name'     => $data['name'],
                 'fixtures' => []
             ];
 
@@ -147,10 +149,11 @@ TEXT
 
     /**
      * @dataProvider getKeypairsTestSet()
+     *
      * @param GeneratorPoint $generator
-     * @param string $k
-     * @param string $expectedX
-     * @param string $expectedY
+     * @param string         $k
+     * @param string         $expectedX
+     * @param string         $expectedY
      */
     public function testGetPublicKey($name, GeneratorPoint $generator, $k, $expectedX, $expectedY)
     {
@@ -165,9 +168,10 @@ TEXT
 
     /**
      * @dataProvider getKeypairsTestSet()
-     * @param string $name
+     *
+     * @param string         $name
      * @param GeneratorPoint $generator
-     * @param string $k - decimal private key
+     * @param string         $k         - decimal private key
      * @param $expectedX
      * @param $expectedY
      */
@@ -214,11 +218,12 @@ TEXT
 
     /**
      * @dataProvider getPublicKeyVerifyTestSet
-     * @param string $name
+     *
+     * @param string         $name
      * @param GeneratorPoint $generator
-     * @param string $xHex
-     * @param string $yHex
-     * @param bool $expectedResult
+     * @param string         $xHex
+     * @param string         $yHex
+     * @param bool           $expectedResult
      */
     public function testPublicKeyVerify($name, GeneratorPoint $generator, $xHex, $yHex, $expectedResult)
     {
@@ -284,10 +289,11 @@ TEXT
 
     /**
      * @dataProvider getDiffieHellmanTestSet()
+     *
      * @param GeneratorPoint $generator
-     * @param string $alice
-     * @param string $bob
-     * @param string $expectedX
+     * @param string         $alice
+     * @param string         $bob
+     * @param string         $expectedX
      */
     public function testGetDiffieHellmanSharedSecret(GeneratorPoint $generator, $alice, $bob, $expectedX)
     {
@@ -330,13 +336,14 @@ TEXT
 
     /**
      * @dataProvider getHmacTestSet
+     *
      * @param GeneratorPoint $G
-     * @param string $privKey
-     * @param string $algo
-     * @param string $message
-     * @param string $eK expected K hex
-     * @param string $eR expected R hex
-     * @param string $eS expected S hex
+     * @param string         $privKey
+     * @param string         $algo
+     * @param string         $message
+     * @param string         $eK      expected K hex
+     * @param string         $eR      expected R hex
+     * @param string         $eS      expected S hex
      */
     public function testHmacSignatures(GeneratorPoint $G, $privKey, $algo, $message, $eK, $eR, $eS)
     {
@@ -378,10 +385,10 @@ TEXT
                 $hashRaw = null;
                 if (!array_key_exists('msg', $testKeyPair)) {
                     if (!array_key_exists('msg_full', $testKeyPair)) {
-                        throw new \RuntimeException("Need full message if not given raw hash value");
+                        throw new \RuntimeException('Need full message if not given raw hash value');
                     }
                     if (!array_key_exists('algo', $testKeyPair)) {
-                        throw new \RuntimeException("Need algorithm in order to hash message");
+                        throw new \RuntimeException('Need algorithm in order to hash message');
                     }
                     $algo = $testKeyPair['algo'];
                     $msg = $testKeyPair['msg_full'];
@@ -407,6 +414,7 @@ TEXT
 
     /**
      * @dataProvider getEcdsaSignFixtures
+     *
      * @param GeneratorPoint $G
      * @param $privKeyHex
      * @param $hashHex
@@ -459,10 +467,10 @@ TEXT
                 $cause = null;
                 if (!array_key_exists('msg', $testKeyPair)) {
                     if (!array_key_exists('msg_full', $testKeyPair)) {
-                        throw new \RuntimeException("Need full message if not given raw hash value");
+                        throw new \RuntimeException('Need full message if not given raw hash value');
                     }
                     if (!array_key_exists('algo', $testKeyPair)) {
-                        throw new \RuntimeException("Need algorithm in order to hash message");
+                        throw new \RuntimeException('Need algorithm in order to hash message');
                     }
                     $algo = $testKeyPair['algo'];
                     $msg = $testKeyPair['msg_full'];
@@ -470,8 +478,8 @@ TEXT
                     $hashRaw = $testKeyPair['msg'];
                 }
 
-                if (!$testKeyPair['result'] && array_key_exists("cause", $testKeyPair)) {
-                    $cause = $testKeyPair["cause"];
+                if (!$testKeyPair['result'] && array_key_exists('cause', $testKeyPair)) {
+                    $cause = $testKeyPair['cause'];
                 }
 
                 $datasets[] = [
@@ -494,24 +502,26 @@ TEXT
 
     /**
      * @dataProvider getEcdsaVerifyFixtures
+     *
      * @param GeneratorPoint $G
      * @param $hashHex
      * @param $eR
      * @param $eS
      * @param $x
      * @param $y
-     * @param bool $result
-     * @param string $cause
+     * @param bool        $result
+     * @param string      $cause
      * @param string|null $algo
      */
     public function testEcdsaSignatureVerification(GeneratorPoint $G, $eR, $eS, $x, $y, $result, $cause = null, $hashHex = null, $msg = null, $algo = null)
     {
         $math = $G->getAdapter();
         $signer = new Signer($math);
+
         try {
             $publicKey = $G->getPublicKeyFrom(gmp_init($x, 16), gmp_init($y, 16));
         } catch (\Exception $e) {
-            throw new \RuntimeException("Unexpected exception parsing public key");
+            throw new \RuntimeException('Unexpected exception parsing public key');
         }
 
         $sig = new Signature(gmp_init($eR, 16), gmp_init($eS, 16));

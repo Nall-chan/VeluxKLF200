@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Serializer\Signature;
@@ -49,7 +50,7 @@ class DerSignatureSerializerTest extends AbstractTestCase
         $serializer = new DerSignatureSerializer();
         $serializer->parse($binary);
     }
-    
+
     /**
      * @expectedException \Mdanter\Ecc\Exception\SignatureDecodeException
      * @expectedExceptionMessage Invalid data.

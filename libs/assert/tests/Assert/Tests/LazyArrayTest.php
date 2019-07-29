@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Assert
+ * Assert.
  *
  * LICENSE
  *
@@ -22,7 +24,7 @@ class LazyArrayTest extends TestCase
     public function testLazyArray()
     {
         $form = [
-            'email' => 'Richard@Home.com',
+            'email'    => 'Richard@Home.com',
             'password' => 'Some highly secret password',
         ];
 

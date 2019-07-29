@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Curves;
@@ -46,11 +47,13 @@ class CurveFactoryTest extends AbstractTestCase
     public function testFailsOnUnknownCurve()
     {
         $curveName = 'unknown';
+
         try {
             CurveFactory::getCurveByName($curveName);
         } catch (UnsupportedCurveException $e) {
             $this->assertTrue($e->hasCurveName());
             $this->assertEquals($curveName, $e->getCurveName());
+
             throw $e;
         }
     }
@@ -62,11 +65,13 @@ class CurveFactoryTest extends AbstractTestCase
     public function testFailsOnUnknownGenerator()
     {
         $curveName = 'unknown';
+
         try {
             CurveFactory::getGeneratorByName($curveName);
         } catch (UnsupportedCurveException $e) {
             $this->assertTrue($e->hasCurveName());
             $this->assertEquals($curveName, $e->getCurveName());
+
             throw $e;
         }
     }

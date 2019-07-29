@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Primitives;
@@ -6,9 +7,9 @@ namespace Mdanter\Ecc\Tests\Primitives;
 use Mdanter\Ecc\Curves\CurveFactory;
 use Mdanter\Ecc\EccFactory;
 use Mdanter\Ecc\Math\GmpMath;
+use Mdanter\Ecc\Primitives\CurveFp;
 use Mdanter\Ecc\Primitives\CurveParameters;
 use Mdanter\Ecc\Primitives\Point;
-use Mdanter\Ecc\Primitives\CurveFp;
 use Mdanter\Ecc\Tests\AbstractTestCase;
 
 class PointTest extends AbstractTestCase

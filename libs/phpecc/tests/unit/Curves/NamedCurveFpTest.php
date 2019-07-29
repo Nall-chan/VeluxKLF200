@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Curves;
@@ -14,7 +15,7 @@ class NamedCurveFpTest extends AbstractTestCase
     {
         $curve = EccFactory::getNistCurves()->curve384();
         $this->assertInstanceOf(NamedCurveFp::class, $curve);
-        ;
+
         $this->assertEquals(NistCurve::NAME_P384, $curve->getName());
     }
 }

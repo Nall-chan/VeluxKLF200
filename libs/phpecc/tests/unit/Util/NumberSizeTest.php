@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Util;
@@ -9,21 +10,21 @@ use Mdanter\Ecc\Util\NumberSize;
 
 class NumberSizeTest extends AbstractTestCase
 {
-
     public function getBnNumBitsNumbers()
     {
-        return $this->_getAdapters(array(
-            array('0', 0),
-            array('0x100', 9),
-            array('0x00000432', 11),
-        ));
+        return $this->_getAdapters([
+            ['0', 0],
+            ['0x100', 9],
+            ['0x00000432', 11],
+        ]);
     }
 
     /**
      * @dataProvider getBnNumBitsNumbers
+     *
      * @param GmpMathInterface $adapter
-     * @param string $number hex number
-     * @param int $expected
+     * @param string           $number   hex number
+     * @param int              $expected
      */
     public function testNumBits(GmpMathInterface $adapter, $number, $expected)
     {
@@ -34,18 +35,19 @@ class NumberSizeTest extends AbstractTestCase
 
     public function getBnNumBytesNumbers()
     {
-        return $this->_getAdapters(array(
-            array('0', 0),
-            array('0x00000432', 2),
-            array('0x2e224bd065fead1218f3608d4e74837b6096d11c4fff4139cd41d9df03cfcb270df7a9ae6f628819c3ae744db4189b1330cb2ee4eea7d5515b282dee59e21dcf1e', 65),
-        ));
+        return $this->_getAdapters([
+            ['0', 0],
+            ['0x00000432', 2],
+            ['0x2e224bd065fead1218f3608d4e74837b6096d11c4fff4139cd41d9df03cfcb270df7a9ae6f628819c3ae744db4189b1330cb2ee4eea7d5515b282dee59e21dcf1e', 65],
+        ]);
     }
 
     /**
      * @dataProvider getBnNumBytesNumbers
+     *
      * @param GmpMathInterface $adapter
-     * @param string $number hex number
-     * @param int $expected
+     * @param string           $number   hex number
+     * @param int              $expected
      */
     public function testNumBytes(GmpMathInterface $adapter, $number, $expected)
     {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Crypto\Signature;
@@ -14,6 +15,6 @@ class SignerTest extends AbstractTestCase
      */
     public function testInvalidHashAlgorithm()
     {
-        new SignHasher("blahblah");
+        new SignHasher('blahblah');
     }
 }

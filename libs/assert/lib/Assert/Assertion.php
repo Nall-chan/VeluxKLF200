@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * Assert
+ * Assert.
  *
  * LICENSE
  *
@@ -375,6 +377,7 @@ class Assertion
                 static::stringify($value1),
                 static::stringify($value2)
             );
+
             throw static::createException($value1, $message, static::INVALID_NOT_EQ, $propertyPath, ['expected' => $value2]);
         }
 
@@ -399,6 +402,7 @@ class Assertion
                 static::stringify($value1),
                 static::stringify($value2)
             );
+
             throw static::createException($value1, $message, static::INVALID_NOT_SAME, $propertyPath, ['expected' => $value2]);
         }
 
@@ -423,6 +427,7 @@ class Assertion
                 static::stringify($value),
                 static::stringify($choices)
             );
+
             throw static::createException($value, $message, static::INVALID_VALUE_IN_ARRAY, $propertyPath, ['choices' => $choices]);
         }
 
@@ -730,9 +735,9 @@ class Assertion
      * @param string|callable|null $message
      * @param string|null          $propertyPath
      *
-     * @return bool
-     *
      * @throws \Assert\AssertionFailedException
+     *
+     * @return bool
      */
     public static function notRegex($value, $pattern, $message = null, $propertyPath = null)
     {
@@ -1758,6 +1763,7 @@ class Assertion
                 static::generateMessage($message ?: 'Class "%s" failed reflection.'),
                 static::stringify($class)
             );
+
             throw static::createException($class, $message, static::INTERFACE_NOT_IMPLEMENTED, $propertyPath, ['interface' => $interfaceName]);
         }
 
@@ -1968,7 +1974,7 @@ class Assertion
             return true;
         }
 
-        throw new BadMethodCallException('No assertion Assertion#'.$method.' exists.');
+        throw new BadMethodCallException('No assertion Assertion#' . $method . ' exists.');
     }
 
     /**
@@ -2236,7 +2242,7 @@ class Assertion
         static::string($value, $message, $propertyPath);
         static::string($format, $message, $propertyPath);
 
-        $dateTime = \DateTime::createFromFormat('!'.$format, $value);
+        $dateTime = \DateTime::createFromFormat('!' . $format, $value);
 
         if (false === $dateTime || $value !== $dateTime->format($format)) {
             $message = \sprintf(
@@ -2467,6 +2473,7 @@ class Assertion
                 static::generateMessage($message ?: 'Value "%s" was expected to be a valid IP address.'),
                 static::stringify($value)
             );
+
             throw static::createException($value, $message, static::INVALID_IP, $propertyPath, ['flag' => $flag]);
         }
 
@@ -2590,7 +2597,7 @@ class Assertion
             $val = (string) $value;
 
             if (\strlen($val) > 100) {
-                $val = \substr($val, 0, 97).'...';
+                $val = \substr($val, 0, 97) . '...';
             }
 
             $result = $val;

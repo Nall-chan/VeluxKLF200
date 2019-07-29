@@ -1,15 +1,17 @@
 <?php
 
-require __DIR__ . "/../vendor/autoload.php";
+declare(strict_types=1);
 
+require __DIR__ . '/../vendor/autoload.php';
+
+use Mdanter\Ecc\Crypto\Signature\Signer;
 use Mdanter\Ecc\Crypto\Signature\SignHasher;
 use Mdanter\Ecc\EccFactory;
-use Mdanter\Ecc\Crypto\Signature\Signer;
-use Mdanter\Ecc\Serializer\PublicKey\PemPublicKeySerializer;
 use Mdanter\Ecc\Serializer\PublicKey\DerPublicKeySerializer;
+use Mdanter\Ecc\Serializer\PublicKey\PemPublicKeySerializer;
 use Mdanter\Ecc\Serializer\Signature\DerSignatureSerializer;
 
-# Same parameters as creating_signature.php
+// Same parameters as creating_signature.php
 
 $adapter = EccFactory::getAdapter();
 $generator = EccFactory::getNistCurves()->generator384();

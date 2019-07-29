@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests;
@@ -10,11 +11,12 @@ abstract class AbstractTestCase extends TestCase
 {
     /**
      * @param array $extra
+     *
      * @return array
      */
     protected function _getAdapters(array $extra = null)
     {
-        if (! defined('PHPUNIT_DEBUG')) {
+        if (!defined('PHPUNIT_DEBUG')) {
             define('PHPUNIT_DEBUG', false);
         }
 
@@ -25,9 +27,9 @@ abstract class AbstractTestCase extends TestCase
         }
 
         if ($extra == null) {
-            return array(
-                array($adapter),
-            );
+            return [
+                [$adapter],
+            ];
         }
 
         $adapters = $this->_getAdapters(null);

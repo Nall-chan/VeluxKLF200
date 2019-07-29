@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Serializer\PublicKey;
@@ -36,7 +37,6 @@ class DerPublicKeySerializerTest extends AbstractTestCase
      */
     public function testInvalidEcdsaOid()
     {
-
         $sequence = new Sequence(
             new Sequence(
                 new ObjectIdentifier('1.1.1.1.1'),

@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Serializer\Point;
 
-use Mdanter\Ecc\Primitives\PointInterface;
 use Mdanter\Ecc\Primitives\CurveFpInterface;
+use Mdanter\Ecc\Primitives\PointInterface;
 use Mdanter\Ecc\Serializer\Util\CurveOidMapper;
 use Mdanter\Ecc\Util\BinaryString;
 
@@ -12,6 +13,7 @@ class UncompressedPointSerializer implements PointSerializerInterface
 {
     /**
      * @param PointInterface $point
+     *
      * @return string
      */
     public function serialize(PointInterface $point): string
@@ -28,6 +30,7 @@ class UncompressedPointSerializer implements PointSerializerInterface
     /**
      * @param CurveFpInterface $curve
      * @param string           $data
+     *
      * @return PointInterface
      */
     public function unserialize(CurveFpInterface $curve, string $data): PointInterface

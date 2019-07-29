@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Mdanter\Ecc\Tests\Serializer\PrivateKey;
@@ -19,7 +20,7 @@ class DerPrivateKeySerializerTest extends AbstractTestCase
 {
     public function testReadsDer()
     {
-        $der = file_get_contents(__DIR__ . "/../../../data/openssl-secp256r1.1.der");
+        $der = file_get_contents(__DIR__ . '/../../../data/openssl-secp256r1.1.der');
         $adapter = EccFactory::getAdapter();
         $derPrivSerializer = new DerPrivateKeySerializer($adapter);
         $key = $derPrivSerializer->parse($der);

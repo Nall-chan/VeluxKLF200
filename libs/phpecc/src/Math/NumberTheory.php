@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mdanter\Ecc\Math;
 
 /***********************************************************************
@@ -24,7 +26,7 @@ namespace Mdanter\Ecc\Math;
      * OTHER DEALINGS IN THE SOFTWARE.
      ************************************************************************/
 
-/**
+/*
  * Implementation of some number theoretic algorithms
  *
  * @author Matyas Danter
@@ -58,7 +60,8 @@ class NumberTheory
     /**
      * @param \GMP[] $poly
      * @param \GMP[] $polymod
-     * @param \GMP $p
+     * @param \GMP   $p
+     *
      * @return \GMP[]
      */
     public function polynomialReduceMod(array $poly, array $polymod, \GMP $p): array
@@ -98,12 +101,13 @@ class NumberTheory
      * @param \GMP[] $m1
      * @param \GMP[] $m2
      * @param \GMP[] $polymod
-     * @param \GMP $p
+     * @param \GMP   $p
+     *
      * @return \GMP[]
      */
     public function polynomialMultiplyMod(array $m1, array $m2, array $polymod, \GMP $p): array
     {
-        $prod = array();
+        $prod = [];
         $cm1 = count($m1);
         $cm2 = count($m2);
 
@@ -132,9 +136,10 @@ class NumberTheory
 
     /**
      * @param \GMP[] $base
-     * @param \GMP $exponent
+     * @param \GMP   $exponent
      * @param \GMP[] $polymod
-     * @param \GMP $p
+     * @param \GMP   $p
+     *
      * @return \GMP[]
      */
     public function polynomialPowMod(array $base, \GMP $exponent, array $polymod, \GMP $p): array
@@ -152,7 +157,7 @@ class NumberTheory
             if ($adapter->equals($adapter->mod($k, $this->two), $this->one)) {
                 $s = $G;
             } else {
-                $s = array($this->one);
+                $s = [$this->one];
             }
 
             while ($adapter->cmp($k, $this->one) > 0) {
@@ -173,6 +178,7 @@ class NumberTheory
     /**
      * @param \GMP $a
      * @param \GMP $p
+     *
      * @return \GMP
      */
     public function squareRootModP(\GMP $a, \GMP $p): \GMP
@@ -239,10 +245,10 @@ class NumberTheory
                     $p
                 ) == -1
                 ) {
-                    $f = array($a, $math->sub($this->zero, $b), $this->one);
+                    $f = [$a, $math->sub($this->zero, $b), $this->one];
 
                     $ff = $this->polynomialPowMod(
-                        array($this->zero, $this->one),
+                        [$this->zero, $this->one],
                         $math->div(
                             $math->add(
                                 $p,
