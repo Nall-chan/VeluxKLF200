@@ -1,0 +1,33 @@
+{
+    "translations": {
+        "de": {
+            "Gateway commands": "Gateway Kommandos",
+            "Discover device": "Suche Gerät",
+            "Remove device": "Entferne Gerät",
+            "Select device to remove": "Gerät zum Entfernen auswählen",
+            "Reboot Gateway": "Gateway neustarten",
+            "Refresh Devicelist": "Aktualisiere Geräteliste",
+            "Type": "Typ",
+            "Zone": "Zone",
+            "Name": "Name",
+            "Location": "Lokation",
+            "Instance has no active parent.": "Instanz hat keinen aktiven Parent.",
+            "Splitter has no IO instance.": "Splitter hat keine IO Instanz.",
+            "%s out of range.": "%s außerhalb des zulässigen Bereiches.",
+            "The view will reload after discovery is finished.": "Die Ansicht wird neu geladen, sobald die Suche abgeschlossen wurde.",
+            "The view will reload after remove is finished.": "Die Ansicht wird neu geladen, nachdem das Entfernen beendet wurde.",
+            "The KLF200 will now reboot.": "Das KLF200 wird jetzt neustarten.",
+            "No error.": "Kein Fehler.",
+            "Timeout.": "Zeitüberschreitung.",
+            "Waiting for finish remove.": "Warte auf entfernen.",
+            "Waiting for finish discovery.": "Warte auf Gerätesuche.",
+            "Not further defined error.": "Nicht weiter definierter Fehler.",
+            "Unknown command or command is not accepted at this state.": "Unbekanntes Kommando oder Kommando wird zu diesem Zeitpunkt nicht akzeptiert.",
+            "Error on Frame Structure.": "Fehler in Frame Struktur.",
+            "Busy. Try again later.": "Beschäftigt. Später nochmal versuchen.",
+            "Bad system table index.": "Ungültiger Index der Systemtabelle.",
+            "Not authenticated.": "Nicht berechtigt.",
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "id": "{38724E6E-8202-4D37-9FA7-BDD2EDA79520}",
+    "name": "KLF200 Configurator",
+    "type": 4,
+    "vendor": "VELUX",
+    "aliases": [
+        "KLF200 Configurator"
+    ],
+    "parentRequirements": [
+        "{7B0F87CC-0408-4283-8E0E-2D48141E42E8}"
+    ],
+    "childRequirements": [],
+    "implemented": [
+        "{5242DAEF-EEBD-441F-AB0B-E83C01475B65}"
+    ],
+    "prefix": "KLF200",
+    "url": "https://github.com/Nall-chan/VeluxKLF200/blob/master/KLF200Configurator/README.md"
+}

@@ -1,0 +1,21 @@
+{
+    "id": "{725D4DF6-C8FC-463C-823A-D3481A3D7003}",
+    "name": "KLF200 Gateway",
+    "type": 2,
+    "vendor": "VELUX",
+    "aliases": [
+        "KLF200 Gateway"
+    ],
+    "parentRequirements": [
+        "{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}"
+    ],
+    "childRequirements": [
+        "{5242DAEF-EEBD-441F-AB0B-E83C01475B65}"
+    ],
+    "implemented": [
+        "{018EF6B5-AB94-40C6-AA53-46943E824ACF}",
+        "{7B0F87CC-0408-4283-8E0E-2D48141E42E8}"
+    ],
+    "prefix": "KLF200",
+    "url": "https://github.com/Nall-chan/VeluxKLF200/blob/master/KLF200Gateway/README.md"
+}

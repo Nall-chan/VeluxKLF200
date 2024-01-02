@@ -1,0 +1,18 @@
+{
+    "id": "{4EBD07B1-2962-4531-AC5F-7944789A9CE5}",
+    "name": "KLF200 Node",
+    "type": 3,
+    "vendor": "VELUX",
+    "aliases": [
+        "KLF200 Node"
+    ],
+    "parentRequirements": [
+        "{7B0F87CC-0408-4283-8E0E-2D48141E42E8}"
+    ],
+    "childRequirements": [],
+    "implemented": [
+        "{5242DAEF-EEBD-441F-AB0B-E83C01475B65}"
+    ],
+    "prefix": "KLF200",
+    "url": "https://github.com/Nall-chan/VeluxKLF200/blob/master/KLF200Node/README.md"
+}

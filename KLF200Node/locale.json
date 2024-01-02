@@ -1,0 +1,41 @@
+{
+    "translations": {
+        "de": {
+            "Request device state": "Lese Gerätestatus",
+            "Request device information": "Lese Geräte-Informationen",
+            "No error.": "Kein Fehler.",
+            "Timeout.": "Zeitüberschreitung.",
+            "Not further defined error.": "Nicht weiter definierter Fehler.",
+            "Unknown command or command is not accepted at this state.": "Unbekanntes Kommando oder Kommando wird zu diesem Zeitpunkt nicht akzeptiert.",
+            "Error on Frame Structure.": "Fehler in Frame Struktur.",
+            "Busy. Try again later.": "Beschäftigt. Später nochmal versuchen.",
+            "Bad system table index.": "Ungültiger Index der Systemtabelle.",
+            "Not authenticated.": "Nicht berechtigt.",
+            "Position": "Position",
+            "Orientation": "Orientierung",
+            "Intensity": "Intensität",
+            "State": "Status",
+            "Lock": "Schloss",
+            "Dual Roller Shutter": "Doppelrollladen",
+            "Switch": "Schalter",
+            "Upper position": "Obere Position",
+            "Lower position": "Untere Position",
+            "Closed": "Geschlossen",
+            "Instance does not implement this function": "Instanze unterstützt diese Funktion nicht",
+            "Invalid Ident": "Ungültiger Ident",
+            "Request rejected": "Anfrage abgelehnt",
+            "Invalid node index": "Ungültiger Node-Eintrag",
+            "Instance has no active parent.": "Instanz hat keinen aktiven Parent.",
+            "Parameter is unable to execute.": "Parameter kann nicht ausgeführt werden.",
+            "Execution has failed.": "Die Ausführung ist fehlgeschlagen.",
+            "not used.": "nicht benutzt",
+            "waiting for power.": "Warten auf Strom.",
+            "Executing.": "Ausführen.",
+            "done.": "fertig.",
+            "unknown.": "unbekannt.",
+            "Execution is completed with no errors.": "Ausführung wurde ohne Fehler beendet.",
+            "Execution is still active.": "Die Ausführung ist noch aktiv.",
+            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
+        }
+    }
+}

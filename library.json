@@ -1,0 +1,12 @@
+{
+    "id": "{7D6B48F7-9957-4E50-B98B-B9831963D802}",
+    "author": "Michael Tröger",
+    "name": "Velux Library",
+    "url": "https://github.com/Nall-chan/VeluxKLF200/",
+    "compatibility": {
+        "version": "5.5"
+    },
+    "version": "0.80",
+    "build": 80,
+    "date": 1605267164
+}
