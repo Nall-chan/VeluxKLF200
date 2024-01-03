@@ -31,8 +31,12 @@ eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(_
  *
  * @version       1.0
  *
- * @example <b>Ohne</b>
+ * @method bool lock(string $ident)
+ * @method void unlock(string $ident)
+ * @method void SetValueInteger(string $Ident, int $value)
+ * @method void SetValueString(string $Ident, string $value)
  *
+ * @property int $ParentID
  * @property string $Host
  * @property string $ReceiveBuffer
  * @property APIData $ReceiveAPIData
@@ -51,7 +55,7 @@ class KLF200Gateway extends IPSModule
             \KLF200Gateway\InstanceStatus::MessageSink as IOMessageSink;
             \KLF200Gateway\InstanceStatus::RegisterParent as IORegisterParent;
             \KLF200Gateway\InstanceStatus::RequestAction as IORequestAction;
-            \KLF200Gateway\DebugHelper::SendDebug as SendDebug2;
+            \KLF200Gateway\DebugHelper::SendDebug as SendDebugTrait;
         }
 
     /**
@@ -60,9 +64,9 @@ class KLF200Gateway extends IPSModule
     public function Create()
     {
         parent::Create();
-        $this->RequireParent('{3CFF0FD9-E306-41DB-9B5A-9D06D38576C3}');
-        $this->RegisterPropertyString('Password', '');
-        $this->RegisterTimer('KeepAlive', 0, 'KLF200_ReadGatewayState($_IPS[\'TARGET\']);');
+        $this->RequireParent(\KLF200\GUID::ClientSocket);
+        $this->RegisterPropertyString(\KLF200\Gateway\Property::Password, '');
+        $this->RegisterTimer(\KLF200\Gateway\Timer::KeepAlive, 0, 'KLF200_ReadGatewayState($_IPS[\'TARGET\']);');
         $this->Host = '';
         $this->ReceiveBuffer = '';
         $this->ReplyAPIData = null;
@@ -128,7 +132,6 @@ class KLF200Gateway extends IPSModule
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->KernelReady();
         }
-
     }
 
     public function ReadGatewayState()
@@ -273,7 +276,7 @@ class KLF200Gateway extends IPSModule
         $this->RegisterParent();
         if ($this->HasActiveParent()) {
             $this->IOChangeState(IS_ACTIVE);
-        }  else {
+        } else {
             $this->IOChangeState(IS_INACTIVE);
         }
     }
@@ -301,7 +304,7 @@ class KLF200Gateway extends IPSModule
     {
         if ($State == IS_ACTIVE) {
             if ($this->Connect()) {
-                $this->SetTimerInterval('KeepAlive', 600000);
+                $this->SetTimerInterval(\KLF200\Gateway\Timer::KeepAlive, 300000);
                 $this->LogMessage($this->Translate('Successfully connected to KLF200.'), KL_NOTIFY);
                 $this->SessionId = 1;
                 $this->RequestProtocolVersion();
@@ -310,10 +313,10 @@ class KLF200Gateway extends IPSModule
                 $this->RequestGatewayVersion();
                 $this->SetHouseStatusMonitor();
             } else {
-                $this->SetTimerInterval('KeepAlive', 0);
+                $this->SetTimerInterval(\KLF200\Gateway\Timer::KeepAlive, 0);
             }
         } else {
-            $this->SetTimerInterval('KeepAlive', 0);
+            $this->SetTimerInterval(\KLF200\Gateway\Timer::KeepAlive, 0);
             $this->SetStatus(IS_INACTIVE);
         }
     }
@@ -321,15 +324,15 @@ class KLF200Gateway extends IPSModule
     protected function SendDebug($Message, $Data, $Format)
     {
         if (is_a($Data, '\\KLF200\\APIData')) {
-            /* @var $Data \KLF200\APIData */
-            $this->SendDebug2($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
+            /** @var \KLF200\APIData $Data */
+            $this->SendDebugTrait($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
             if ($Data->isError()) {
-                $this->SendDebug2('Error', $Data->ErrorToString(), 0);
+                $this->SendDebugTrait('Error', $Data->ErrorToString(), 0);
             } elseif ($Data->Data != '') {
-                $this->SendDebug2($Message . ':Data', $Data->Data, $Format);
+                $this->SendDebugTrait($Message . ':Data', $Data->Data, $Format);
             }
         } else {
-            $this->SendDebug2($Message, $Data, $Format);
+            $this->SendDebugTrait($Message, $Data, $Format);
         }
     }
 
@@ -365,12 +368,12 @@ class KLF200Gateway extends IPSModule
 
     private function Connect()
     {
-        if (strlen($this->ReadPropertyString('Password')) > 31) {
+        if (strlen($this->ReadPropertyString(\KLF200\Gateway\Property::Password)) > 31) {
             $this->SetStatus(IS_EBASE + 4);
             return false;
         }
 
-        $APIData = new \KLF200\APIData(\KLF200\APICommand::PASSWORD_ENTER_REQ, str_pad($this->ReadPropertyString('Password'), 32, "\x00"));
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::PASSWORD_ENTER_REQ, str_pad($this->ReadPropertyString(\KLF200\Gateway\Property::Password), 32, "\x00"));
         $ResultAPIData = $this->SendAPIData($APIData, false);
         if ($ResultAPIData === false) {
             $this->SetStatus(IS_EBASE + 2);
@@ -399,7 +402,7 @@ class KLF200Gateway extends IPSModule
      */
     private function SendAPIDataToChildren(\KLF200\APIData $APIData)
     {
-        $this->SendDataToChildren($APIData->ToJSON('{5242DAEF-EEBD-441F-AB0B-E83C01475B65}'));
+        $this->SendDataToChildren($APIData->ToJSON(\KLF200\GUID::ToNodes));
     }
 
     private function DecodeSLIPData($SLIPData)
@@ -511,38 +514,37 @@ class KLF200Gateway extends IPSModule
                 }
             }
             if (!$this->HasActiveParent()) {
+                $this->unlock('SendAPIData');
                 throw new Exception($this->Translate('Socket not connected'), E_USER_NOTICE);
             }
             $Data = $APIData->GetSLIPData();
             $this->SendDebug('Send', $APIData, 1);
             $this->SendDebug('Send SLIP Data', $Data, 1);
-            $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
+            $JSON['DataID'] = \KLF200\GUID::ToClientSocket;
             $JSON['Buffer'] = utf8_encode($Data);
             $JsonString = json_encode($JSON);
             $this->ReplyAPIData = null;
             parent::SendDataToParent($JsonString);
             $ResponseAPIData = $this->ReadReplyAPIData();
-
+            $this->unlock('SendAPIData');
             if ($ResponseAPIData === null) {
                 throw new Exception($this->Translate('Timeout.'), E_USER_NOTICE);
             }
             $this->SendDebug('Response', $ResponseAPIData, 1);
-            $this->unlock('SendAPIData');
+            $this->SendDebug('Duaration', (int) ((microtime(true) - $time) * 1000) . ' msec', 0);
             if ($ResponseAPIData->isError()) {
                 trigger_error($this->Translate($ResponseAPIData->ErrorToString()), E_USER_NOTICE);
             }
             return $ResponseAPIData;
         } catch (Exception $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);
-            if ($exc->getCode() != E_USER_ERROR) {
-                $this->unlock('SendAPIData');
-            }
             trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
             if ($SetState) {
                 $this->SetStatus(IS_EBASE + 3);
             }
-            return new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT));
+            $ResponseAPIData = new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT));
         }
+        return $ResponseAPIData;
     }
 }
 

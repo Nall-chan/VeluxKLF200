@@ -11,6 +11,9 @@ eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_conte
 eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_contents(__DIR__ . '/../libs/helper/ParentIOHelper.php') . '}');
 
 /**
+ * @method void RegisterParent()
+ *
+ * @property int $ParentID
  * @property array $Nodes
  * @property bool $GetNodeInfoIsRunning
  */
@@ -22,7 +25,7 @@ class KLF200Configurator extends IPSModule
         \KLF200Configurator\InstanceStatus {
             \KLF200Configurator\InstanceStatus::MessageSink as IOMessageSink;
             \KLF200Configurator\InstanceStatus::RequestAction as IORequestAction;
-            \KLF200Configurator\DebugHelper::SendDebug as SendDebug2;
+            \KLF200Configurator\DebugHelper::SendDebug as SendDebugTrait;
         }
 
     /**
@@ -31,7 +34,7 @@ class KLF200Configurator extends IPSModule
     public function Create()
     {
         parent::Create();
-        $this->ConnectParent('{725D4DF6-C8FC-463C-823A-D3481A3D7003}');
+        $this->ConnectParent(\KLF200\GUID::Gateway);
         $this->GetNodeInfoIsRunning = false;
         $this->Nodes = [];
         $this->ParentID = 0;
@@ -69,7 +72,6 @@ class KLF200Configurator extends IPSModule
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->KernelReady();
         }
-
     }
 
     /**
@@ -250,15 +252,15 @@ class KLF200Configurator extends IPSModule
     protected function SendDebug($Message, $Data, $Format)
     {
         if (is_a($Data, '\\KLF200\\APIData')) {
-            /* @var $Data \KLF200\APIData */
-            $this->SendDebug2($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
+            /** @var \KLF200\APIData $Data */
+            $this->SendDebugTrait($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
             if ($Data->isError()) {
-                $this->SendDebug2('Error', $Data->ErrorToString(), 0);
+                $this->SendDebugTrait('Error', $Data->ErrorToString(), 0);
             } elseif ($Data->Data != '') {
-                $this->SendDebug2($Message . ':Data', $Data->Data, $Format);
+                $this->SendDebugTrait($Message . ':Data', $Data->Data, $Format);
             }
         } else {
-            $this->SendDebug2($Message, $Data, $Format);
+            $this->SendDebugTrait($Message, $Data, $Format);
         }
     }
 
@@ -349,7 +351,7 @@ class KLF200Configurator extends IPSModule
     {
         $FoundNodes = $this->Nodes;
         $this->SendDebug('Found Nodes', $FoundNodes, 0);
-        $InstanceIDListNodes = $this->GetInstanceList('{4EBD07B1-2962-4531-AC5F-7944789A9CE5}', $Splitter, 'NodeId');
+        $InstanceIDListNodes = $this->GetInstanceList(\KLF200\GUID::Node, $Splitter, \KLF200\Node\Property::NodeId);
         $this->SendDebug('IPS Nodes', $InstanceIDListNodes, 0);
         $NodeValues = [];
         foreach ($FoundNodes as $NodeID => $Node) {
@@ -373,8 +375,8 @@ class KLF200Configurator extends IPSModule
                 ];
             }
             $AddValue['create'] = [
-                'moduleID'      => '{4EBD07B1-2962-4531-AC5F-7944789A9CE5}',
-                'configuration' => ['NodeId' => $NodeID],
+                'moduleID'      => \KLF200\GUID::Node,
+                'configuration' => [\KLF200\Node\Property::NodeId => $NodeID],
                 'location'      => ['Velux KLF200']
             ];
 
@@ -417,7 +419,7 @@ class KLF200Configurator extends IPSModule
                 throw new Exception($this->Translate('Instance has no active parent.'), E_USER_NOTICE);
             }
             /** @var \KLF200\APIData $ResponseAPIData */
-            $ret = @$this->SendDataToParent($APIData->ToJSON('{7B0F87CC-0408-4283-8E0E-2D48141E42E8}'));
+            $ret = @$this->SendDataToParent($APIData->ToJSON(\KLF200\GUID::ToGateway));
             $ResponseAPIData = @unserialize($ret);
             $this->SendDebug('Response', $ResponseAPIData, 1);
             return $ResponseAPIData;

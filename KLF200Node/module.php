@@ -9,6 +9,9 @@ eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DI
 eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/VariableProfileHelper.php') . '}');
 
 /**
+ * @method void RegisterProfileInteger(string $Name, string $Icon, string $Prefix, string $Suffix, int $MinValue, int $MaxValue, int $StepSize)
+ * @method void RegisterProfileBoolean(string $Name, string $Icon, string $Prefix, string $Suffix)
+ *
  * @property char $NodeId
  * @property int $SessionId
  * @property int $NodeSubType
@@ -20,7 +23,7 @@ class KLF200Node extends IPSModule
         \KLF200Node\VariableHelper,
         \KLF200Node\VariableProfileHelper,
         \KLF200Node\DebugHelper {
-            \KLF200Node\DebugHelper::SendDebug as SendDebug2;
+            \KLF200Node\DebugHelper::SendDebug as SendDebugTrait;
         }
 
     /**
@@ -29,9 +32,9 @@ class KLF200Node extends IPSModule
     public function Create()
     {
         parent::Create();
-        $this->ConnectParent('{725D4DF6-C8FC-463C-823A-D3481A3D7003}');
-        $this->RegisterPropertyInteger('NodeId', -1);
-        $this->RegisterAttributeInteger('NodeSubType', -1);
+        $this->ConnectParent(\KLF200\GUID::Gateway);
+        $this->RegisterPropertyInteger(\KLF200\Node\Property::NodeId, -1);
+        $this->RegisterAttributeInteger(\KLF200\Node\Attribute::NodeSubType, -1);
         $this->SessionId = 1;
         $this->NodeSubType = -1;
     }
@@ -54,12 +57,12 @@ class KLF200Node extends IPSModule
             \KLF200\APICommand::MODE_SEND_NTF
         ];
         $this->SessionId = 1;
-        $NodeId = $this->ReadPropertyInteger('NodeId');
+        $NodeId = $this->ReadPropertyInteger(\KLF200\Node\Property::NodeId);
         $this->NodeId = chr($NodeId);
         if (($NodeId < 0) || ($NodeId > 255)) {
             $Line = 'NOTHING';
         } else {
-            $NodeId = preg_quote(substr(json_encode(utf8_encode(chr($this->ReadPropertyInteger('NodeId')))), 0, -1));
+            $NodeId = preg_quote(substr(json_encode(utf8_encode(chr($this->ReadPropertyInteger(\KLF200\Node\Property::NodeId)))), 0, -1));
             foreach ($APICommands as $APICommand) {
                 $Lines[] = '.*"Command":' . $APICommand . ',"Data":' . $NodeId . '.*';
             }
@@ -67,7 +70,7 @@ class KLF200Node extends IPSModule
         }
         $this->SetReceiveDataFilter('(' . $Line . ')');
         $this->SendDebug('FILTER', $Line, 0);
-        $this->NodeSubType = $this->ReadAttributeInteger('NodeSubType');
+        $this->NodeSubType = $this->ReadAttributeInteger(\KLF200\Node\Attribute::NodeSubType);
         $this->SetSummary(sprintf('%04X', $this->NodeSubType));
         $this->RegisterProfileInteger('KLF200.Intensity.51200', '', '', ' %', 0, 0xC800, 1);
         $this->RegisterProfileInteger('KLF200.RollerShutter', 'Jalousie', '', ' %', 0, 0xC800, 1);
@@ -153,17 +156,17 @@ class KLF200Node extends IPSModule
 
     public function OrientationUp()
     {
-        return $this->SetOrientation(0x0000);
+        return $this->OrientationSet(0x0000);
     }
 
     public function OrientationDown()
     {
-        return $this->SetOrientation(0xC800);
+        return $this->OrientationSet(0xC800);
     }
 
     public function OrientationStop()
     {
-        return $this->SetOrientation(0xD200);
+        return $this->OrientationSet(0xD200);
     }
 
     public function DimSet(int $Value)
@@ -379,15 +382,15 @@ class KLF200Node extends IPSModule
     protected function SendDebug($Message, $Data, $Format)
     {
         if (is_a($Data, '\\KLF200\\APIData')) {
-            /* @var $Data \KLF200\APIData */
-            $this->SendDebug2($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
+            /** @var \KLF200\APIData $Data */
+            $this->SendDebugTrait($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
             if ($Data->isError()) {
-                $this->SendDebug2('Error', $Data->ErrorToString(), 0);
+                $this->SendDebugTrait('Error', $Data->ErrorToString(), 0);
             } elseif ($Data->Data != '') {
-                $this->SendDebug2($Message . ':Data', $Data->Data, $Format);
+                $this->SendDebugTrait($Message . ':Data', $Data->Data, $Format);
             }
         } else {
-            $this->SendDebug2($Message, $Data, $Format);
+            $this->SendDebugTrait($Message, $Data, $Format);
         }
     }
 
@@ -628,7 +631,7 @@ class KLF200Node extends IPSModule
                   $this->SendDebug('TimeStamp', strftime('%H:%M:%S %d.%m.%Y', $TimeStamp), 0);
                  */
                 if ($NodeTypeSubType != $this->NodeSubType) {
-                    $this->WriteAttributeInteger('NodeSubType', $NodeTypeSubType);
+                    $this->WriteAttributeInteger(\KLF200\Node\Attribute::NodeSubType, $NodeTypeSubType);
                     $this->SetSummary(sprintf('%04X', $NodeTypeSubType));
                     $this->RegisterNodeVariables($NodeTypeSubType);
                 }
@@ -780,7 +783,7 @@ class KLF200Node extends IPSModule
                 throw new Exception($this->Translate('Instance has no active parent.'), E_USER_NOTICE);
             }
             /** @var \KLF200\APIData $ResponseAPIData */
-            $ret = @$this->SendDataToParent($APIData->ToJSON('{7B0F87CC-0408-4283-8E0E-2D48141E42E8}'));
+            $ret = @$this->SendDataToParent($APIData->ToJSON(\KLF200\GUID::ToGateway));
             $ResponseAPIData = @unserialize($ret);
             $this->SendDebug('Response', $ResponseAPIData, 1);
             if ($ResponseAPIData->isError()) {
