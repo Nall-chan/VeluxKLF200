@@ -1,8 +1,5 @@
 <?php
 
-/**
- * @todo PASSWORD_CHANGE
- */
 declare(strict_types=1);
 require_once __DIR__ . '/../libs/KLF200Class.php';  // diverse Klassen
 eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_contents(__DIR__ . '/../libs/helper/BufferHelper.php') . '}');
@@ -11,6 +8,15 @@ eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_conte
 eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_contents(__DIR__ . '/../libs/helper/ParentIOHelper.php') . '}');
 
 /**
+ * KLF200Configurator Klasse
+ * Erweitert IPSModule.
+ *
+ * @author        Michael Tröger <micha@nall-chan.net>
+ * @copyright     2024 Michael Tröger
+ * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ *
+ * @version       0.80
+ *
  * @method void RegisterParent()
  *
  * @property int $ParentID
@@ -34,7 +40,7 @@ class KLF200Configurator extends IPSModule
     public function Create()
     {
         parent::Create();
-        $this->ConnectParent(\KLF200\GUID::Gateway);
+        $this->RequireParent(\KLF200\GUID::Gateway);
         $this->GetNodeInfoIsRunning = false;
         $this->Nodes = [];
         $this->ParentID = 0;
@@ -148,9 +154,6 @@ class KLF200Configurator extends IPSModule
             trigger_error($this->Translate($ResultAPIData->ErrorToString()), E_USER_NOTICE);
             return false;
         }
-        //PopupRemove
-        //$this->UpdateFormField('ProgressRemove', 'visible', false);
-        //$this->UpdateFormField('RemoveNode', 'visible', true);
         return true;
     }
 
@@ -174,11 +177,6 @@ class KLF200Configurator extends IPSModule
         }
         $Form['actions'][1]['values'] = $NodeValues;
 
-        /*       $Form['actions'][0]['items'][0]['items'][0]['onClick'] = <<<'EOT'
-          if(KLF200_DiscoveryNodes($id)){
-          echo
-          EOT . ' "' . $this->Translate('The view will reload after discovery is finished.') . '";}';
-         */
         $DeleteNodeValues = $this->GetDeleteNodeConfigFormValues();
         $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][1]['values'] = $DeleteNodeValues;
         $Form['actions'][0]['items'][0]['items'][1]['popup']['items'][0]['onClick'] = <<<'EOT'
@@ -191,11 +189,6 @@ class KLF200Configurator extends IPSModule
                 if(KLF200_RebootGateway($id)){
                 echo
                 EOT . ' "' . $this->Translate('The KLF200 will now reboot.') . '";}';
-
-        $Form['actions'][0]['items'][0]['items'][3]['onClick'] = <<<'EOT'
-                IPS_RequestAction($id,'GetAllNodesInformation',true);
-                EOT;
-
         $this->SendDebug('FORM', json_encode($Form), 0);
         $this->SendDebug('FORM', json_last_error_msg(), 0);
         return json_encode($Form);

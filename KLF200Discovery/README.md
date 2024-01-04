@@ -6,7 +6,7 @@
 [![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#3-spenden)
 [![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#3-spenden)  
 
-# Velux KLF200 Configurator  <!-- omit in toc -->
+# Velux KLF200 Discovery  <!-- omit in toc -->
 
 ## Inhaltsverzeichnis <!-- omit in toc -->
 
@@ -15,21 +15,19 @@
 - [3. Software-Installation](#3-software-installation)
 - [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
 - [5. Statusvariablen und Profile](#5-statusvariablen-und-profile)
-- [6. Gateway Kommandos](#6-gateway-kommandos)
-- [7. PHP-Befehlsreferenz](#7-php-befehlsreferenz)
-- [8. Aktionen](#8-aktionen)
-- [9. Anhang](#9-anhang)
+- [6. PHP-Befehlsreferenz](#6-php-befehlsreferenz)
+- [7. Aktionen](#7-aktionen)
+- [8. Anhang](#8-anhang)
   - [1. Changelog](#1-changelog)
   - [2. Spenden](#2-spenden)
-- [10. Lizenz](#10-lizenz)
+- [9. Lizenz](#9-lizenz)
 
 
 ## 1. Funktionsumfang
 
- - Auslesen und darstellen aller vom Gateway bekannten Geräte (Nodes).  
- - Einfaches Anlegen von neuen Instanzen in IPS.  
- - Anlernen und löschen von Nodes im Gateway.  
-
+ - Auffinden von KLF200 im Netzwerk.  
+ - Einfaches Anlegen von dem benötigten Konfigurator, Gateway und IO Instanzen.  
+ 
 ## 2. Voraussetzungen
 
  - IPS ab Version 6.0  
@@ -43,65 +41,33 @@
   
 ## 4. Einrichten der Instanzen in IP-Symcon
 
-Eine einfache Einrichtung diese Instanz, ist über die [Discovery-Instanz](../KLF200Discovery/README.md) möglich.  
+Eine einfache Einrichtung ist über diese Instanz möglich.  
+Bei der installation aus dem Store wird das anlegen der Instanz automatisch angeboten.  
 
 Bei der manuellen Einrichtung ist das Modul im Dialog `Instanz hinzufügen` unter den Hersteller `VELUX` zu finden.  
 ![Instanz hinzufügen](../imgs/instanzen.png)  
 
 Alternativ ist es auch in der Liste alle Konfiguratoren aufgeführt.  
-![Instanz hinzufügen](../imgs/instanzen_configurator.png)  
-
-Es wird automatisch eine `KLF200 Gateway` Instanz erzeugt, wenn noch keine vorhanden ist.  
-Werden in dem sich öffnenden Konfigurationsformular keine Geräte angezeigt, so ist zuerst die IO-Instanz korrekt zu konfigurieren.  
-Diese kann über die Schaltfläche `Gateway konfigurieren` und dann `Schnittstelle konfigurieren` erreicht werden.  
-
-Ist die Gateway-Instanz korrekt verbunden, wird beim öffnen des Konfigurator folgender Dialog angezeigt.  
-![Konfigurator](../imgs/conf_configurator.png)  
+![Instanz hinzufügen](../imgs/instanzen_discovery.png)  
 
 Über das selektieren eines Eintrages in der Tabelle und betätigen des dazugehörigen `Erstellen` Button,  
-können Instanzen in IPS angelegt werden.  
+wird automatisch eine Konfigurator, Gateway und IO Instanz erzeugt.  
+
+![Discovery](../imgs/conf_discovery.png)  
 
 ## 5. Statusvariablen und Profile
 
 Dieses Modul erstellt keine Statusvariablen und Profile.  
 
-## 6. Gateway Kommandos
+## 6. PHP-Befehlsreferenz
 
-In dem Konfigurator sind über den ersten Eintrag die Gateway Kommandos erreichbar.  
-Mit den dort vorhandenen Schaltflächen können Geräte (Nodes) an dem Gateway an- un ab gelernt werden, sowie das Gateway selber neugestartet werden.  
-Durch die Schaltfläche `Suche Gerät`, wird die Gerätesuche gestartet. Alle Geräte welche sich im Anlern-Modus befinden werden hierdurch an das Gateway angelernt.  
-![Konfigurator](../imgs/conf_configurator1.png)  
+Dieses Modul besitzt keine Instanzfunktionen.
 
-Über die Schaltfläche `Entferne Gerät` wird eine Liste mit allen im Gateway vorhandenen Geräten (Nodes) angezeigt.  
-Durch auswählen eines Eintrages und betätigen von `Entferne Gerät` wird das Gerät aus dem Gateway gelöscht.  
-![Konfigurator](../imgs/conf_configurator2.png)  
-
-## 7. PHP-Befehlsreferenz
-
-**Folgende Funktionen liefern `TRUE` bei Erfolg.  
-Im Fehlerfall wird eine Warnung erzeugt und `FALSE` zurückgegeben.**  
-
-```php
-bool KLF200_DiscoveryNodes(int $InstanzeID);
-```
-Sucht nach neuen Geräten und lernte Diese am Gateway an.  
-
-```php
-bool KLF200_RemoveNode(int $InstanzeID, int $Node);
-```
-Entfernt das angelernte Gerät mit der in '$Node' übergebenen NodeId aus dem Gateway.    
-
-```php
-bool KLF200_RebootGateway(int $InstanzeID);
-```
-Startet das Gateway KLF200 neu.  
-
-
-## 8. Aktionen
+## 7. Aktionen
 
 Es gibt keine speziellen Aktionen für dieses Modul.  
 
-## 9. Anhang
+## 8. Anhang
 
 ### 1. Changelog
 
@@ -116,7 +82,7 @@ Es gibt keine speziellen Aktionen für dieses Modul.
 [![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](https://www.amazon.de/hz/wishlist/ls/YU4AI9AQT9F?ref_=wl_share) 
 
 
-## 10. Lizenz
+## 9. Lizenz
 
   IPS-Modul:  
   [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  

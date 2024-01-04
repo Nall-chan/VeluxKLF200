@@ -1,0 +1,14 @@
+{
+    "id": "{3F7261B4-04E3-4FF5-98D3-41ED2AD9548D}",
+    "name": "KLF200 Discovery",
+    "type": 5,
+    "vendor": "VELUX",
+    "aliases": [
+        "KLF200 Discovery"
+    ],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "KLF200",
+    "url": "https://github.com/Nall-chan/VeluxKLF200/blob/master/KLF200Discovery/README.md"
+}

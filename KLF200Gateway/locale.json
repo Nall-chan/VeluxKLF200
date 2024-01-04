@@ -3,6 +3,7 @@
         "de": {
             "Active": "Aktiv",
             "Password": "Passwort",
+            "Restart KLF200 when Symcon shuts down": "KLF200 neu starten, wenn Symcon herunterfährt",
             "Connected": "Verbunden",
             "Interface closed": "Verbindung geschlossen",
             "Connection lost": "Verbindung verloren",

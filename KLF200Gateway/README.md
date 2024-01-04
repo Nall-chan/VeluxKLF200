@@ -1,6 +1,6 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Version](https://img.shields.io/badge/Modul%20Version-0.80-blue.svg?style=flat-square)](https://community.symcon.de/t/modul-velux-klf200/50429)
-[![Version](https://img.shields.io/badge/Symcon%20Version-5.5%20%3E-green.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/installation/migrationen/v54-v55-q4-2020/)  
+[![Version](https://img.shields.io/badge/Symcon%20Version-6.0%20%3E-green.svg?style=flat-square)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v55-v60-q3-2021/)  
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Check Style](https://github.com/Nall-chan/VeluxKLF200/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions) [![Run Tests](https://github.com/Nall-chan/VeluxKLF200/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions)  
 [![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#3-spenden)
@@ -31,7 +31,7 @@
 
 ## 2. Voraussetzungen
 
- - IPS ab Version 5.2  
+ - IPS ab Version 6.0  
  - KLF200 io-homecontrol® Gateway  
     - KLF muss per LAN angeschlossen sein  
     - KLF Firmware 2.0.0.71 oder neuer  
@@ -42,7 +42,7 @@
 
 ## 4. Einrichten der Instanzen in IP-Symcon
 
-Eine einfache Einrichtung ist über die im Objektbaum unter `Konfigurator Instanzen` zu findene Instanz [KLF200 Konfigurator](../KLF200Configurator/README.md) möglich.  
+Eine einfache Einrichtung ist über die im Objektbaum unter `Discovery Instanzen` zu findende Instanz [KLF200 Discovery](../KLF200Discovery/README.md) möglich.  
 
 Bei der manuellen Einrichtung ist das Modul im Dialog `Instanz hinzufügen` unter den Hersteller `VELUX` zu finden.  
 ![Instanz hinzufügen](../imgs/instanzen.png)  

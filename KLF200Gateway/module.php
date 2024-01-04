@@ -9,27 +9,15 @@ eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(_
 eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(__DIR__ . '/../libs/helper/ParentIOHelper.php') . '}');
 eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(__DIR__ . '/../libs/helper/VariableHelper.php') . '}');
 
-/*
- * @addtogroup klf200
- * @{
- *
- * @package       KLF200
- * @file          module.php
- * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2020 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
- * @version       1.0
- */
-
 /**
  * KLF200Gateway Klasse implementiert die KLF 200 API
  * Erweitert IPSModule.
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2020 Michael Tröger
+ * @copyright     2024 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       1.0
+ * @version       0.80
  *
  * @method bool lock(string $ident)
  * @method void unlock(string $ident)
@@ -39,8 +27,8 @@ eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(_
  * @property int $ParentID
  * @property string $Host
  * @property string $ReceiveBuffer
- * @property APIData $ReceiveAPIData
- * @property APIData $ReplyAPIData
+ * @property \KLF200\APIData $ReceiveAPIData
+ * @property \KLF200\APIData $ReplyAPIData
  * @property array $Nodes
  * @property int $WaitForNodes
  * @property int $SessionId
@@ -66,13 +54,21 @@ class KLF200Gateway extends IPSModule
         parent::Create();
         $this->RequireParent(\KLF200\GUID::ClientSocket);
         $this->RegisterPropertyString(\KLF200\Gateway\Property::Password, '');
+        $this->RegisterPropertyBoolean(\KLF200\Gateway\Property::RebootOnShutdown, false);
+        $this->RegisterAttributeBoolean(\KLF200\Gateway\Attribute::ClientSocketStateOnShutdown, false);
         $this->RegisterTimer(\KLF200\Gateway\Timer::KeepAlive, 0, 'KLF200_ReadGatewayState($_IPS[\'TARGET\']);');
         $this->Host = '';
+        $this->SessionId = 1;
+        $this->ParentID = 0;
+
         $this->ReceiveBuffer = '';
         $this->ReplyAPIData = null;
         $this->Nodes = [];
-        $this->SessionId = 1;
-        $this->ParentID = 0;
+
+        if (IPS_GetKernelRunlevel() != KR_READY) {
+            $this->RegisterMessage(0, IPS_KERNELSTARTED);
+        }
+        $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
     }
 
     /**
@@ -83,12 +79,12 @@ class KLF200Gateway extends IPSModule
         $this->IOMessageSink($TimeStamp, $SenderID, $Message, $Data);
         switch ($Message) {
             case IPS_KERNELSTARTED:
+                $this->UnregisterMessage(0, IPS_KERNELSTARTED);
                 $this->KernelReady();
                 break;
-                //        case IPS_KERNELSHUTDOWN:
-                //$this->SendDisconnect();
-                // Todo
-                //            break;
+            case IPS_KERNELSHUTDOWN:
+                $this->KernelShutdown();
+                break;
         }
     }
 
@@ -106,10 +102,10 @@ class KLF200Gateway extends IPSModule
     public function GetConfigurationForParent()
     {
         $Config = [
-            'Port'      => 51200,
-            'UseSSL'    => true,
-            'VerifyPeer'=> false,
-            'VerifyHost'=> true
+            \KLF200\ClientSocket\Property::Port      => 51200,
+            \KLF200\ClientSocket\Property::UseSSL    => true,
+            \KLF200\ClientSocket\Property::VerifyPeer=> false,
+            \KLF200\ClientSocket\Property::VerifyHost=> true
         ];
         return json_encode($Config);
     }
@@ -119,9 +115,6 @@ class KLF200Gateway extends IPSModule
      */
     public function ApplyChanges()
     {
-        $this->RegisterMessage(0, IPS_KERNELSTARTED);
-        $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
-
         $this->RegisterMessage($this->InstanceID, FM_CONNECT);
         $this->RegisterMessage($this->InstanceID, FM_DISCONNECT);
 
@@ -129,8 +122,17 @@ class KLF200Gateway extends IPSModule
         $this->RegisterVariableString('FirmwareVersion', $this->Translate('Firmware Version'), '', 0);
         $this->RegisterVariableInteger('HardwareVersion', $this->Translate('Hardware Version'), '', 0);
         $this->RegisterVariableString('ProtocolVersion', $this->Translate('Protocol Version'), '', 0);
+
+        $this->ReceiveBuffer = '';
+        $this->ReplyAPIData = null;
+        $this->Nodes = [];
         if (IPS_GetKernelRunlevel() == KR_READY) {
-            $this->KernelReady();
+            $this->RegisterParent();
+            if ($this->HasActiveParent()) {
+                $this->IOChangeState(IS_ACTIVE);
+            } else {
+                $this->IOChangeState(IS_INACTIVE);
+            }
         }
     }
 
@@ -276,11 +278,43 @@ class KLF200Gateway extends IPSModule
         $this->RegisterParent();
         if ($this->HasActiveParent()) {
             $this->IOChangeState(IS_ACTIVE);
-        } else {
+        } else { // Parent nicht aktiv. Bei KernelReady sollte das normal sein, da wir den IO beim beenden schließen.
+            if ($this->ParentID) { // Haben wir einen Parent?
+                $CurrentState = @IPS_GetProperty($this->ParentID, 'Open'); // ist der auch wirklich geschlossen?
+                // War er vor dem Shutdown geöffnet?
+                $LastState = $this->ReadAttributeBoolean(\KLF200\Gateway\Attribute::ClientSocketStateOnShutdown);
+                if ($LastState && !$CurrentState) {
+                    // Dann den IO öffnen. Das wird anschließend IM_CHANGESTATUS trigger (landet in IOChangeState), so das wir hier fertig sind.
+                    IPS_RunScriptText('IPS_SetProperty(' . $this->ParentID . ', \'Open\', true); IPS_ApplyChanges(' . $this->ParentID . ');');
+                    return;
+                }
+            }
+            // wir haben keinen Parent.. also INACTIVE Status
             $this->IOChangeState(IS_INACTIVE);
         }
     }
 
+    /**
+     * Wird ausgeführt wenn der Kernel runtergefahren wurde.
+     */
+    protected function KernelShutdown()
+    {
+        if ($this->ParentID) {
+            // Open/Closed vom IO merken, wir müssen die Verbindung sauber trennen und beim neustart gezielt aufbauen, sonst schmiert das KLF200 ab.
+            $LastState = @IPS_GetProperty($this->ParentID, 'Open');
+            $this->WriteAttributeBoolean(
+                \KLF200\Gateway\Attribute::ClientSocketStateOnShutdown,
+                $LastState
+            );
+            if ($LastState) {
+                if ($this->ReadPropertyBoolean(\KLF200\Gateway\Property::RebootOnShutdown)) {
+                    $this->RebootGateway();
+                }
+                // IO war geöffnet, wir haben uns das in einem Attribute gemerkt und schließen jetzt den IO.
+                IPS_RunScriptText('IPS_SetProperty(' . $this->ParentID . ', \'Open\', false); IPS_ApplyChanges(' . $this->ParentID . ');');
+            }
+        }
+    }
     protected function RegisterParent()
     {
         $IOId = $this->IORegisterParent();
@@ -337,16 +371,6 @@ class KLF200Gateway extends IPSModule
     }
 
     /*
-      public function GetSystemTable()
-      {
-      $APIData = new \KLF200\APIData(\KLF200\APICommand::CS_GET_SYSTEMTABLE_DATA_REQ);
-      $ResultAPIData = $this->SendAPIData($APIData);
-      //$this->lock('SendAPIData');
-      // wait for finish
-      // 01 00 3A DC 1C 03 C0 1C 01 00 00 00 00
-      //$this->unlock('SendAPIData');
-      }
-
       public function GetSceneList()
       {
       $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_SCENE_LIST_REQ);
@@ -366,6 +390,11 @@ class KLF200Gateway extends IPSModule
         $this->SendAPIDataToChildren($APIData);
     }
 
+    /**
+     * Connect
+     *
+     * @return bool
+     */
     private function Connect()
     {
         if (strlen($this->ReadPropertyString(\KLF200\Gateway\Property::Password)) > 31) {
@@ -462,7 +491,7 @@ class KLF200Gateway extends IPSModule
      * Wartet auf eine Antwort einer Anfrage an den LMS.
      *
      * @param string $APICommand
-     * @result mixed
+     * @return ?\KLF200\APIData
      */
     private function ReadReplyAPIData()
     {
@@ -486,22 +515,15 @@ class KLF200Gateway extends IPSModule
         return pack('n', $SessionId);
     }
 
+    /**
+     * SendAPIData
+     *
+     * @param  \KLF200\APIData $APIData
+     * @param  bool $SetState
+     * @return \KLF200\APIData
+     */
     private function SendAPIData(\KLF200\APIData $APIData, bool $SetState = true)
     {
-        //Statt SessionId benutzen wir einfach NodeID.
-        /* if (in_array($APIData->Command, [
-          \KLF200\APICommand::COMMAND_SEND_REQ,
-          \KLF200\APICommand::STATUS_REQUEST_REQ,
-          \KLF200\APICommand::WINK_SEND_REQ,
-          \KLF200\APICommand::SET_LIMITATION_REQ,
-          \KLF200\APICommand::GET_LIMITATION_STATUS_REQ,
-          \KLF200\APICommand::MODE_SEND_REQ,
-          \KLF200\APICommand::ACTIVATE_SCENE_REQ,
-          \KLF200\APICommand::STOP_SCENE_REQ,
-          \KLF200\APICommand::ACTIVATE_PRODUCTGROUP_REQ
-          ])) {
-          $APIData->Data = $this->GetSessionId() . $APIData->Data;
-          } */
         try {
             $this->SendDebug('Wait to send', $APIData, 1);
             $time = microtime(true);
@@ -547,5 +569,3 @@ class KLF200Gateway extends IPSModule
         return $ResponseAPIData;
     }
 }
-
-/* @} */

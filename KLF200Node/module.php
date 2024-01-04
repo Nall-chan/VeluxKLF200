@@ -9,6 +9,15 @@ eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DI
 eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/VariableProfileHelper.php') . '}');
 
 /**
+ * KLF200Node Klasse implementiert ein Gerät
+ * Erweitert IPSModule.
+ *
+ * @author        Michael Tröger <micha@nall-chan.net>
+ * @copyright     2024 Michael Tröger
+ * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ *
+ * @version       0.80
+ *
  * @method void RegisterProfileInteger(string $Name, string $Icon, string $Prefix, string $Suffix, int $MinValue, int $MaxValue, int $StepSize)
  * @method void RegisterProfileBoolean(string $Name, string $Icon, string $Prefix, string $Suffix)
  *
@@ -199,7 +208,7 @@ class KLF200Node extends IPSModule
     public function RequestAction($Ident, $Value)
     {
         if (IPS_GetVariable($this->GetIDForIdent($Ident))['VariableType'] == VARIABLETYPE_BOOLEAN) {
-            $Value = $Value ? 0xC800 : 0x0000;
+            $Value = $Value ? 0x0000 : 0xC800;
         }
         switch ($Ident) {
             case 'MAIN':
@@ -550,28 +559,28 @@ class KLF200Node extends IPSModule
         $Main = @$this->GetIDForIdent('MAIN');
         if (($Main > 0) && ($CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($Main)['VariableType'] == VARIABLETYPE_BOOLEAN) {
-                $CurrentPosition = ($CurrentPosition == 0xC800);
+                $CurrentPosition = !($CurrentPosition == 0xC800);
             }
             $this->SetValue('MAIN', $CurrentPosition);
         }
         $FP1 = @$this->GetIDForIdent('FP1');
         if (($FP1 > 0) && ($FP1CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($FP1)['VariableType'] == VARIABLETYPE_BOOLEAN) {
-                $FP1CurrentPosition = ($FP1CurrentPosition == 0xC800);
+                $FP1CurrentPosition = !($FP1CurrentPosition == 0xC800);
             }
             $this->SetValue('FP1', $FP1CurrentPosition);
         }
         $FP2 = @$this->GetIDForIdent('FP2');
         if (($FP2 > 0) && ($FP2CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($FP2)['VariableType'] == VARIABLETYPE_BOOLEAN) {
-                $FP2CurrentPosition = ($FP2CurrentPosition == 0xC800);
+                $FP2CurrentPosition = !($FP2CurrentPosition == 0xC800);
             }
             $this->SetValue('FP2', $FP2CurrentPosition);
         }
         $FP3 = @$this->GetIDForIdent('FP3');
         if (($FP3 > 0) && ($FP3CurrentPosition <= 0xC800)) {
             if (IPS_GetVariable($FP3)['VariableType'] == VARIABLETYPE_BOOLEAN) {
-                $FP3CurrentPosition = ($FP3CurrentPosition == 0xC800);
+                $FP3CurrentPosition = !($FP3CurrentPosition == 0xC800);
             }
             $this->SetValue('FP3', $FP3CurrentPosition);
         }

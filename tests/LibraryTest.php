@@ -11,6 +11,11 @@ class LibraryTest extends TestCaseSymconValidation
         $this->validateLibrary(__DIR__ . '/..');
     }
 
+    public function testValidateKLF200Discovery(): void
+    {
+        $this->validateModule(__DIR__ . '/../KLF200Discovery');
+
+    }
     public function testValidateKLF200Gateway(): void
     {
         $this->validateModule(__DIR__ . '/../KLF200Gateway');
@@ -20,6 +25,7 @@ class LibraryTest extends TestCaseSymconValidation
     {
         $this->validateModule(__DIR__ . '/../KLF200Configurator');
     }
+
     public function testValidateKLF200Node(): void
     {
         $this->validateModule(__DIR__ . '/../KLF200Node');

@@ -67,11 +67,6 @@
                             "type": "Button",
                             "label": "Reboot Gateway",
                             "onClick": ""
-                        },
-                        {
-                            "type": "Button",
-                            "label": "Refresh Devicelist",
-                            "onClick": ""
                         }
                     ]
                 },

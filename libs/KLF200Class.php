@@ -5,9 +5,15 @@ declare(strict_types=1);
 namespace KLF200{
     class GUID
     {
+        // Symcon
+        public const DDNS = '{780B2D48-916C-4D59-AD35-5A429B2355A5}';
         public const ClientSocket = '{3CFF0FD9-E306-41DB-9B5A-9D06D38576C3}';
+
+        //KLF200
         public const Gateway = '{725D4DF6-C8FC-463C-823A-D3481A3D7003}';
         public const Node = '{4EBD07B1-2962-4531-AC5F-7944789A9CE5}';
+        public const Configurator = '{38724E6E-8202-4D37-9FA7-BDD2EDA79520}';
+        //Dataflow
         public const ToGateway = '{7B0F87CC-0408-4283-8E0E-2D48141E42E8}';
         public const ToNodes = '{5242DAEF-EEBD-441F-AB0B-E83C01475B65}';
         public const ToClientSocket = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
@@ -887,7 +893,9 @@ namespace KLF200\Node{
     {
         public const NodeId = 'NodeId';
     }
-    class Attribute{
+
+    class Attribute
+    {
         public const NodeSubType = 'NodeSubType';
     }
 }
@@ -896,10 +904,28 @@ namespace KLF200\Gateway{
     class Property
     {
         public const Password = 'Password';
+        public const RebootOnShutdown = 'RebootOnShutdown';
+    }
+
+    class Attribute
+    {
+        public const ClientSocketStateOnShutdown = 'ClientSocketStateOnShutdown';
     }
 
     class Timer
     {
         public const KeepAlive = 'KeepAlive';
+    }
+}
+
+namespace KLF200\ClientSocket{
+    class Property
+    {
+        public const Open = 'Open';
+        public const Host = 'Host';
+        public const Port = 'Port';
+        public const UseSSL = 'UseSSL';
+        public const VerifyPeer = 'VerifyPeer';
+        public const VerifyHost = 'VerifyHost';
     }
 }

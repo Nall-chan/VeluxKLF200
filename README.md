@@ -1,6 +1,6 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Version](https://img.shields.io/badge/Modul%20Version-0.80-blue.svg?style=flat-square)](https://community.symcon.de/t/modul-velux-klf200/50429)
-[![Version](https://img.shields.io/badge/Symcon%20Version-5.5%20%3E-green.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/installation/migrationen/v54-v55-q4-2020/)  
+[![Version](https://img.shields.io/badge/Symcon%20Version-6.0%20%3E-green.svg?style=flat-square)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v55-v60-q3-2021/)  
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Check Style](https://github.com/Nall-chan/VeluxKLF200/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions) [![Run Tests](https://github.com/Nall-chan/VeluxKLF200/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions)  
 [![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#3-spenden)
@@ -16,6 +16,7 @@ ermöglicht die Einbindung von allen io-homecontrol® Geräten, welche von diese
 **Inhaltsverzeichnis**
 
 - [1. Funktionsumfang](#1-funktionsumfang)
+  - [KLF200 Discovery](#klf200-discovery)
   - [KLF200 Configurator](#klf200-configurator)
   - [KLF200 Gateway](#klf200-gateway)
   - [KLF200 Node](#klf200-node)
@@ -30,6 +31,9 @@ ermöglicht die Einbindung von allen io-homecontrol® Geräten, welche von diese
 
 ## 1. Funktionsumfang
 
+### [KLF200 Discovery](KLF200Discovery/README.md)  
+ - Auffinden von KLF200 im Netzwerk und Anlegen der Konfigurator-Instanz inklusive Gateway in IPS.  
+
 ### [KLF200 Configurator](KLF200Configurator/README.md)  
  - Einfaches Anlegen von Geräte-Instanzen in IPS.  
   
@@ -41,7 +45,7 @@ ermöglicht die Einbindung von allen io-homecontrol® Geräten, welche von diese
   
 ## 2. Voraussetzungen
 
- - IPS 5.5 oder höher  
+ - IPS 6.0 oder höher  
  - KLF200 io-homecontrol® Gateway  
     - KLF muss per LAN angeschlossen sein  
     - KLF Firmware 2.0.0.71 oder neuer   
@@ -54,7 +58,7 @@ ermöglicht die Einbindung von allen io-homecontrol® Geräten, welche von diese
 ## 4. Einrichten der Instanzen in IP-Symcon
 
 Details sind direkt in der Dokumentation der jeweiligen Module beschrieben.  
-Es wird empfohlen die Einrichtung mit der Konfigurator-Instanz zu starten ([KLF200 Configurator:](KLF200Configurator/README.md)).  
+Es wird empfohlen die Einrichtung mit der Discovery-Instanz zu starten ([KLF200 Discovery:](KLF200Discovery/README.md)).  
 
 ## 5. Anhang
 
@@ -63,6 +67,7 @@ Es wird empfohlen die Einrichtung mit der Konfigurator-Instanz zu starten ([KLF2
  
 | Modul               | Typ          | Prefix | GUID                                   |
 | ------------------- | ------------ | ------ | -------------------------------------- |
+| KLF200 Discovery    | Discovery    | KLF200 | {3F7261B4-04E3-4FF5-98D3-41ED2AD9548D} |
 | KLF200 Configurator | Configurator | KLF200 | {38724E6E-8202-4D37-9FA7-BDD2EDA79520} |
 | KLF200 Gateway      | Splitter     | KLF200 | {725D4DF6-C8FC-463C-823A-D3481A3D7003} |
 | KLF200 Node         | Device       | KLF200 | {4EBD07B1-2962-4531-AC5F-7944789A9CE5} |
@@ -70,8 +75,10 @@ Es wird empfohlen die Einrichtung mit der Konfigurator-Instanz zu starten ([KLF2
 ### 2. Changelog
 
  Version 0.80:
- - Doku aktualisiert.
- - 
+ - Doku aktualisiert.  
+ - Discovery Instanz hinzugefügt.  
+ - Gateway Instanz trennt die Verbindung zum KLF wenn Symcon runtergefahren wird.
+ - Gateway Instanz kann beim beenden von Symcon das KLF neustarten .
 
  Version 0.71:
  - Fehlermeldung wenn Timeout beim Verbindungsaufbau auftrat.  
