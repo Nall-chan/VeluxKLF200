@@ -15,13 +15,13 @@ eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_conte
  * @copyright     2024 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       0.80
+ * @version       1.00
  *
  * @method void RegisterParent()
  *
  * @property int $ParentID
  * @property array $Nodes
- * @property bool $GetNodeInfoIsRunning
+ * @property array $TempNodes
  */
 class KLF200Configurator extends IPSModule
 {
@@ -41,8 +41,9 @@ class KLF200Configurator extends IPSModule
     {
         parent::Create();
         $this->RequireParent(\KLF200\GUID::Gateway);
-        $this->GetNodeInfoIsRunning = false;
+        //$this->GetNodeInfoIsRunning = false;
         $this->Nodes = [];
+        $this->TempNodes = [];
         $this->ParentID = 0;
     }
 
@@ -56,15 +57,11 @@ class KLF200Configurator extends IPSModule
         $this->RegisterMessage($this->InstanceID, FM_DISCONNECT);
 
         parent::ApplyChanges();
+
         $APICommands = [
-            \KLF200\APICommand::GET_ALL_GROUPS_INFORMATION_NTF,
-            \KLF200\APICommand::GET_ALL_GROUPS_INFORMATION_FINISHED_NTF,
             \KLF200\APICommand::GET_ALL_NODES_INFORMATION_NTF,
             \KLF200\APICommand::GET_ALL_NODES_INFORMATION_FINISHED_NTF,
-            \KLF200\APICommand::GET_SCENE_INFORMATION_NTF,
-            \KLF200\APICommand::GET_SCENE_LIST_NTF,
-            \KLF200\APICommand::CS_DISCOVER_NODES_NTF,
-            \KLF200\APICommand::CS_SYSTEM_TABLE_UPDATE_NTF
+            \KLF200\APICommand::NODE_INFORMATION_CHANGED_NTF
         ];
 
         if (count($APICommands) > 0) {
@@ -98,6 +95,7 @@ class KLF200Configurator extends IPSModule
         if ($this->IORequestAction($Ident, $Value)) {
             return true;
         }
+        /*
         if ($Ident == 'GetAllNodesInformation') {
             if ($Value) {
                 if ($this->GetAllNodesInformation()) {
@@ -109,7 +107,7 @@ class KLF200Configurator extends IPSModule
             } else {
                 return $this->GetAllNodesInformation();
             }
-        }
+        }*/
         return false;
     }
 
@@ -222,9 +220,10 @@ class KLF200Configurator extends IPSModule
     {
         if ($State == IS_ACTIVE) {
             $this->UpdateFormField('GatewayCommands', 'visible', true);
-            $this->GetAllNodesInformation();
+            //$this->GetAllNodesInformation();
         } else {
             $this->Nodes = [];
+            $this->TempNodes = [];
             $NodeValues = [];
             $Splitter = IPS_GetInstance($this->InstanceID)['ConnectionID'];
             if ($Splitter > 0) {
@@ -233,6 +232,7 @@ class KLF200Configurator extends IPSModule
             $this->UpdateFormField('Config', 'values', json_encode($NodeValues));
             $this->UpdateFormField('RemoveNode', 'values', json_encode([]));
             $this->UpdateFormField('GatewayCommands', 'visible', false);
+            //$this->ReloadForm();
         }
     }
 
@@ -247,6 +247,9 @@ class KLF200Configurator extends IPSModule
         if (is_a($Data, '\\KLF200\\APIData')) {
             /** @var \KLF200\APIData $Data */
             $this->SendDebugTrait($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
+            if ($Data->NodeID != -1) {
+                $this->SendDebugTrait($Message . ':NodeID', $Data->NodeID, 0);
+            }
             if ($Data->isError()) {
                 $this->SendDebugTrait('Error', $Data->ErrorToString(), 0);
             } elseif ($Data->Data != '') {
@@ -260,34 +263,25 @@ class KLF200Configurator extends IPSModule
     private function ReceiveEvent(\KLF200\APIData $APIData)
     {
         switch ($APIData->Command) {
-            case \KLF200\APICommand::CS_DISCOVER_NODES_NTF:
-                if (!$this->GetNodeInfoIsRunning) {
-                    IPS_RunScriptText('IPS_RequestAction(' . $this->InstanceID . ',"GetAllNodesInformation",false);');
-                }
-                break;
-            case \KLF200\APICommand::CS_SYSTEM_TABLE_UPDATE_NTF:
-                sleep(3);
-                if (!$this->GetNodeInfoIsRunning) {
-                    IPS_RunScriptText('IPS_RequestAction(' . $this->InstanceID . ',"GetAllNodesInformation",false);');
-                }
-                break;
             case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_NTF:
                 $NodeID = ord($APIData->Data[0]);
                 $Name = trim(substr($APIData->Data, 4, 64));
                 $NodeTypeSubType = unpack('n', substr($APIData->Data, 69, 2))[1];
-                $this->SendDebug('NodeID', $NodeID, 0);
+                $this->SendDebug('NodeID (' . $APIData->NodeID . ')', $NodeID, 0);
                 $this->SendDebug('Name', $Name, 0);
                 $this->SendDebug('NodeTypeSubType', $NodeTypeSubType, 0);
                 $this->SendDebug('SerialNumber', substr($APIData->Data, 76, 8), 1);
                 $this->SendDebug('BuildNumber', ord($APIData->Data[75]), 0);
-                $Nodes = $this->Nodes;
-                $Nodes[$NodeID] = [
+                $Nodes = $this->TempNodes; //$this->Nodes;
+                $Nodes[$APIData->NodeID] = [
                     'Name'            => $Name,
                     'NodeTypeSubType' => $NodeTypeSubType
                 ];
-                $this->Nodes = $Nodes;
+                $this->TempNodes = $Nodes;
                 break;
             case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_FINISHED_NTF:
+                $this->Nodes = $this->TempNodes;
+                $this->TempNodes = [];
                 $Splitter = IPS_GetInstance($this->InstanceID)['ConnectionID'];
                 $NodeValues = $this->GetNodeConfigFormValues($Splitter);
                 $this->UpdateFormField('Config', 'values', json_encode($NodeValues));
@@ -298,7 +292,14 @@ class KLF200Configurator extends IPSModule
                 $this->UpdateFormField('RemoveNode', 'values', json_encode($DeleteNodeValues));
                 $this->UpdateFormField('RemoveNode', 'visible', true);
                 $this->UpdateFormField('ProgressRemove', 'visible', false);
-                $this->GetNodeInfoIsRunning = false;
+                //$this->GetNodeInfoIsRunning = false;
+                break;
+            case \KLF200\APICommand::NODE_INFORMATION_CHANGED_NTF:
+                $Name = trim(substr($APIData->Data, 4, 64));
+                $this->SendDebug('Name', $Name, 0);
+                $Nodes = $this->Nodes;
+                $Nodes[$APIData->NodeID]['Name'] = $Name;
+                $this->Nodes = $Nodes;
                 break;
         }
     }
@@ -324,7 +325,7 @@ class KLF200Configurator extends IPSModule
         $item1 = IPS_GetProperty($InstanceID, $ConfigParam);
     }
 
-    private function GetAllNodesInformation()
+    /*private function GetAllNodesInformation()
     {
         $this->Nodes = [];
 
@@ -335,7 +336,7 @@ class KLF200Configurator extends IPSModule
         }
         $this->GetNodeInfoIsRunning = true;
         return ord($ResultAPIData->Data[0]) == 1;
-    }
+    }*/
 
     /**
      * Interne Funktion des SDK.

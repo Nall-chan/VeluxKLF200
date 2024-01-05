@@ -34,6 +34,7 @@ namespace KLF200{
          * @var string
          */
         public $Data;
+        public $NodeID = -1;
         public $LastError = \KLF200\ErrorNTF::NO_ERROR;
 
         public function __construct($Command, $Data = '')
@@ -41,6 +42,7 @@ namespace KLF200{
             if (is_string($Command)) {
                 $Data = json_decode($Command, true);
                 $this->Command = $Data['Command'];
+                $this->NodeID = $Data['NodeID'];
                 $this->Data = utf8_decode($Data['Data']);
                 return;
             }
@@ -50,6 +52,7 @@ namespace KLF200{
                 $this->Data = '';
             } else {
                 $this->Data = $Data;
+                $this->NodeID = $this->getNodeID();
             }
         }
 
@@ -57,6 +60,7 @@ namespace KLF200{
         {
             $Data['DataID'] = $GUID;
             $Data['Command'] = $this->Command;
+            $Data['NodeID'] = $this->NodeID;
             $Data['Data'] = utf8_encode($this->Data);
             return json_encode($Data);
         }
@@ -71,6 +75,14 @@ namespace KLF200{
             }
             $TransportData .= chr($cs);
             return "\xc0" . str_replace(["\xDB", "\xC0"], ["\xDB\xDD", "\xDB\xDC"], $TransportData) . "\xc0";
+        }
+
+        public function getNodeID()
+        {
+            if (array_key_exists($this->Command, \KLF200\APICommand::$EventsToNodeId)) {
+                return ord($this->Data[\KLF200\APICommand::$EventsToNodeId[$this->Command]]);
+            }
+            return -1;
         }
 
         public function isEvent()
@@ -137,21 +149,64 @@ namespace KLF200{
         {
             switch ($State) {
                 case self::NON_EXECUTING:
-                    return 'Parameter is unable to execute.';
+                    return 'Parameter is unable to execute';
                 case self::ERROR_WHILE_EXECUTION:
-                    return 'Execution has failed.';
+                    return 'Execution has failed';
                 case self::NOT_USED:
-                    return 'not used.';
+                    return 'not used';
                 case self::WAITING_FOR_POWER:
-                    return 'waiting for power.';
+                    return 'waiting for power';
                 case self::EXECUTING:
-                    return 'Executing.';
+                    return 'Executing';
                 case self::DONE:
-                    return 'done.';
+                    return 'done';
                 case self::UNKNOWN:
-                    return 'unknown.';
+                    return 'unknown';
                 default:
                     return 'unknown state value: 0x' . sprintf('%02X', $State);
+            }
+        }
+    }
+
+    class StatusID
+    {
+        public const STATUS_LOCAL_USER = 0x00;
+        public const STATUS_USER = 0x01;
+        public const STATUS_RAIN = 0x02;
+        public const STATUS_TIMER = 0x03;
+        public const STATUS_UPS = 0x05;
+        public const STATUS_PROGRAM = 0x08;
+        public const STATUS_WIND = 0x09;
+        public const STATUS_MYSELF = 0x0A;
+        public const STATUS_AUTOMATIC_CYCLE = 0x0B;
+        public const STATUS_EMERGENCY = 0x0C;
+        public const STATUS_UNKNOWN = 0xFF;
+
+        public static function ToString(int $StatusID)
+        {
+            switch ($StatusID) {
+                case self::STATUS_LOCAL_USER:
+                    return 'LOCAL_USER';
+                case self::STATUS_USER:
+                    return 'USER';
+                case self::STATUS_RAIN:
+                    return 'RAIN';
+                case self::STATUS_TIMER:
+                    return 'TIMER';
+                case self::STATUS_UPS:
+                    return 'UPS';
+                case self::STATUS_PROGRAM:
+                    return 'PROGRAM';
+                case self::STATUS_WIND:
+                    return 'WIND';
+                case self::STATUS_MYSELF:
+                    return 'MYSELF';
+                case self::STATUS_AUTOMATIC_CYCLE:
+                    return 'AUTOMATIC_CYCLE';
+                case self::STATUS_EMERGENCY:
+                    return 'EMERGENCY';
+                default:
+                    return 'unknown statusID: ' . sprintf('%02X', $StatusID);
             }
         }
     }
@@ -166,11 +221,11 @@ namespace KLF200{
         {
             switch ($RunStatus) {
                 case self::EXECUTION_COMPLETED:
-                    return 'Execution is completed with no errors.';
+                    return 'Execution is completed with no errors';
                 case self::EXECUTION_FAILED:
-                    return 'Execution has failed.';
+                    return 'Execution has failed';
                 case self::EXECUTION_ACTIVE:
-                    return 'Execution is still active.';
+                    return 'Execution is still active';
             }
         }
     }
@@ -278,7 +333,7 @@ namespace KLF200{
                 case self::WRONG_LOAD_CONNECTED:
                     return 'wrong load on node';
                 case self::COLOUR_NOT_REACHABLE:
-                    return 'that node is unable to reach received colour code';
+                    return 'the node is unable to reach received colour code';
                 case self::TARGET_NOT_REACHABLE:
                     return 'the node is unable to reach received target position';
                 case self::BAD_INDEX_RECEIVED:
@@ -290,7 +345,7 @@ namespace KLF200{
                 case self::INFORMATION_CODE:
                     return 'an unknown error code received';
                 case self::PARAMETER_LIMITED:
-                    return 'the parameter was limited by an unknown device';
+                    return 'the parameter was limited';
                 case self::LIMITATION_BY_LOCAL_USER:
                     return 'the parameter was limited by local button';
                 case self::LIMITATION_BY_USER:
@@ -313,6 +368,30 @@ namespace KLF200{
                     return 'the parameter was limited by an automatic cycle';
                 case self::LIMITATION_BY_EMERGENCY:
                     return 'the parameter was limited by an emergency';
+            }
+        }
+    }
+
+    class StatusType
+    {
+        public const Target_position = 0x00;
+        public const Current_position = 0x01;
+        public const Remaining_time = 0x02;
+        public const Main_info = 0x03;
+
+        public static function ToString($StatusType)
+        {
+            switch ($StatusType) {
+                case self::Target_position:
+                    return 'Target_position';
+                case self::Current_position:
+                    return 'Current_position';
+                case self::Remaining_time:
+                    return 'Remaining_time';
+                case self::Main_info:
+                    return 'Main_info';
+                default:
+                    return 'invalid StatusType';
             }
         }
     }
@@ -518,6 +597,17 @@ namespace KLF200{
             self::IGNORE_2122,
             self::IGNORE_2123,
             self::IGNORE_2124
+        ];
+
+        public static $EventsToNodeId = [
+            self::GET_NODE_INFORMATION_NTF        => 0,
+            self::GET_ALL_NODES_INFORMATION_NTF   => 0,
+            self::NODE_INFORMATION_CHANGED_NTF    => 0,
+            self::NODE_STATE_POSITION_CHANGED_NTF => 0,
+            self::COMMAND_RUN_STATUS_NTF          => 3,
+            self::COMMAND_REMAINING_TIME_NTF      => 2,
+            self::SESSION_FINISHED_NTF            => 0,
+            self::STATUS_REQUEST_NTF              => 3
         ];
 
         public static function isEvent(int $APICommand)
@@ -892,6 +982,8 @@ namespace KLF200\Node{
     class Property
     {
         public const NodeId = 'NodeId';
+        public const WaitForFinishSession = 'WaitForFinishSession';
+        public const AutoRename = 'AutoRename';
     }
 
     class Attribute

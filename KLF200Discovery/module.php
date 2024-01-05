@@ -13,7 +13,7 @@ eval('declare(strict_types=1);namespace KLF200Discovery {?>' . file_get_contents
  * @copyright     2024 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       0.80
+ * @version       1.00
  *
  * @method bool SendDebug(string $Message, mixed $Data, int $Format)
  */

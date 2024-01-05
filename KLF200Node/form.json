@@ -4,6 +4,16 @@
             "name": "NodeId",
             "type": "NumberSpinner",
             "caption": "Node ID"
+        },
+        {
+            "name": "WaitForFinishSession",
+            "type": "CheckBox",
+            "caption": "Wait for the status of the device"
+        },
+        {
+            "name": "AutoRename",
+            "type": "CheckBox",
+            "caption": "Rename the instance if the name changes in the KLF200"
         }
     ],
     "actions": [

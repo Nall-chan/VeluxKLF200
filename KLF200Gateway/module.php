@@ -17,7 +17,7 @@ eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(_
  * @copyright     2024 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       0.80
+ * @version       1.00
  *
  * @method bool lock(string $ident)
  * @method void unlock(string $ident)
@@ -32,6 +32,7 @@ eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(_
  * @property array $Nodes
  * @property int $WaitForNodes
  * @property int $SessionId
+ * @property bool $GetNodeInfoIsRunning
  */
 class KLF200Gateway extends IPSModule
 {
@@ -63,6 +64,7 @@ class KLF200Gateway extends IPSModule
 
         $this->ReceiveBuffer = '';
         $this->ReplyAPIData = null;
+        $this->GetNodeInfoIsRunning = false;
         $this->Nodes = [];
 
         if (IPS_GetKernelRunlevel() != KR_READY) {
@@ -92,6 +94,18 @@ class KLF200Gateway extends IPSModule
     {
         if ($this->IORequestAction($Ident, $Value)) {
             return true;
+        }
+        if ($Ident == 'GetAllNodesInformation') {
+            if ($Value) {
+                if ($this->GetAllNodesInformation()) {
+                    while ($this->GetNodeInfoIsRunning) {
+                        IPS_Sleep(10);
+                    }
+                    return true;
+                }
+            } else {
+                return $this->GetAllNodesInformation();
+            }
         }
         return false;
     }
@@ -346,6 +360,7 @@ class KLF200Gateway extends IPSModule
                 $this->ReadGatewayState();
                 $this->RequestGatewayVersion();
                 $this->SetHouseStatusMonitor();
+                $this->GetAllNodesInformation();
             } else {
                 $this->SetTimerInterval(\KLF200\Gateway\Timer::KeepAlive, 0);
             }
@@ -360,6 +375,9 @@ class KLF200Gateway extends IPSModule
         if (is_a($Data, '\\KLF200\\APIData')) {
             /** @var \KLF200\APIData $Data */
             $this->SendDebugTrait($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
+            if ($Data->NodeID != -1) {
+                $this->SendDebugTrait($Message . ':NodeID', $Data->NodeID, 0);
+            }
             if ($Data->isError()) {
                 $this->SendDebugTrait('Error', $Data->ErrorToString(), 0);
             } elseif ($Data->Data != '') {
@@ -370,6 +388,19 @@ class KLF200Gateway extends IPSModule
         }
     }
 
+    private function GetAllNodesInformation()
+    {
+        $this->Nodes = [];
+
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_ALL_NODES_INFORMATION_REQ);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData->isError()) {
+            return false;
+        }
+        $this->GetNodeInfoIsRunning = true;
+        return ord($ResultAPIData->Data[0]) == 1;
+    }
+
     /*
       public function GetSceneList()
       {
@@ -377,6 +408,7 @@ class KLF200Gateway extends IPSModule
       $ResultAPIData = $this->SendAPIData($APIData);
       }
      */
+
     private function SetHouseStatusMonitor()
     {
         $APIData = new \KLF200\APIData(\KLF200\APICommand::HOUSE_STATUS_MONITOR_ENABLE_REQ);
@@ -387,6 +419,23 @@ class KLF200Gateway extends IPSModule
     //################# PRIVATE
     private function ReceiveEvent(\KLF200\APIData $APIData)
     {
+        switch ($APIData->Command) {
+            case \KLF200\APICommand::CS_DISCOVER_NODES_NTF:
+                sleep(3);
+                if (!$this->GetNodeInfoIsRunning) {
+                    IPS_RunScriptText('IPS_RequestAction(' . $this->InstanceID . ',"GetAllNodesInformation",false);');
+                }
+                break;
+            case \KLF200\APICommand::CS_SYSTEM_TABLE_UPDATE_NTF:
+                sleep(3);
+                if (!$this->GetNodeInfoIsRunning) {
+                    IPS_RunScriptText('IPS_RequestAction(' . $this->InstanceID . ',"GetAllNodesInformation",false);');
+                }
+                break;
+            case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_FINISHED_NTF:
+                $this->GetNodeInfoIsRunning = false;
+                break;
+        }
         $this->SendAPIDataToChildren($APIData);
     }
 

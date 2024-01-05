@@ -1,5 +1,5 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-0.80-blue.svg?style=flat-square)](https://community.symcon.de/t/modul-velux-klf200/50429)
+[![Version](https://img.shields.io/badge/Modul%20Version-1.00-blue.svg?style=flat-square)](https://community.symcon.de/t/modul-velux-klf200/50429)
 [![Version](https://img.shields.io/badge/Symcon%20Version-6.0%20%3E-green.svg?style=flat-square)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v55-v60-q3-2021/)  
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Check Style](https://github.com/Nall-chan/VeluxKLF200/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions) [![Run Tests](https://github.com/Nall-chan/VeluxKLF200/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions)  
@@ -51,14 +51,38 @@ Bei der manuellen Einrichtung ist das Modul im Dialog `Instanz hinzufügen` unte
 ![Instanz hinzufügen](../imgs/instanzen.png)  
 
 In dem sich öffnenden Konfigurationsformular ist die `Node ID` des Gerätes einzutragen.  
+![Konfiguration](../imgs/conf_node.png)  
+
+**Konfigurationsseite (Parameter)**  
+
+| Name                 | Text                                                    |
+| -------------------- | ------------------------------------------------------- |
+| NodeId               | Node ID                                                 |
+| WaitForFinishSession | Auf Zustand vom Gerät warten (*)                        |
+| AutoRename           | Instanz umbenennen, wenn sich der Name in KLF200 ändert |
+
+**(*) Wichtig:**  
+Wird diese Option aktiviert, so wartet die Instanz bei einer Ansteuerung eines Gerätes auf die Beendigung der Aktion!  
+Solange die Aktion noch läuft und das Gerät nicht 'fertig' (oder Fehler) gemeldet hat, wird im WebFront die Aktion auch als laufend Angezeigt bzw. wird ein PHP-Skript welches eine Aktion mit `KLF200_SetMainParameter` gestartet hat, blockiert.  
+Der Vorteil ist jedoch, sollte ein Gerät seine Aktion nicht abschließen können, so wird die Fehlermeldung unmittelbar im WebFront bzw. PHP-Skript ausgegeben.  
+
+Ist diese Option inaktiv, so wird nur das Zustellen des Befehls an das KLF200 und die empfangene Quittung ausgewertet. Sollte dann beim ausführen der Aktion das Gerät einen Fehler melden, so ist dies nur im Logfile bzw. Meldungslog zu finden.  
+
 
 ## 5. Statusvariablen und Profile
-
 
 Die Statusvariablen werden je nach Geräte-Typ des Nodes angelegt oder auch wieder entfernt.  
 Es werden folgende Statusvariablen verwendet: 'MAIN', 'FP1', 'FP2' und 'FP3'.  
 Dabei entsprechen die Werte und Aktionen dem jeweiligen Funktions-Parameter, welche bei jedem Geräte-Typ (NodeSubType) unterschiedlich sind.  
 Entsprechend sind auch der Name und das Profil beim anlegen der Instanz je nach Geräte-Typ unterschiedlich.  
+
+**Statusvariablen allgemein:**  
+
+| Name               | Typ     | Ident          | Beschreibung                              |
+| :----------------- | :------ | :------------- | :---------------------------------------- |
+| letzte Aktivierung | integer | LastActivation | Quelle der letzte Ansteuerung des Gerätes |
+| zuletzt gesehen    | integer | LastSeen       | UnixTimestamp der letzten Meldung         |
+| letzter Fehler     | string  | ErrorState     | Letzter Fehlerstatus                      |
 
 **Statusvariable MAIN:**  
 
@@ -95,6 +119,7 @@ Entsprechend sind auch der Name und das Profil beim anlegen der Instanz je nach 
  
 | Name                        | Typ     | verwendet von Statusvariablen  (Ident) |
 | :-------------------------- | :------ | :------------------------------------- |
+| KLF200.StatusOwner          | integer | STATUS                                 |
 | KLF200.Light.Reversed       | boolean | MAIN                                   |
 | KLF200.Lock                 | boolean | MAIN                                   |
 | KLF200.Blind                | integer | MAIN                                   |

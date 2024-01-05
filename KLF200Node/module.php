@@ -16,14 +16,18 @@ eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DI
  * @copyright     2024 Michael Tröger
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
- * @version       0.80
+ * @version       1.00
  *
+ * @method bool lock(string $ident)
+ * @method void unlock(string $ident)
+ * @method void RegisterProfileIntegerEx(string $Name, string $Icon, string $Prefix, string $Suffix, array $Associations, int $MaxValue = -1, int $StepSize = 0)
  * @method void RegisterProfileInteger(string $Name, string $Icon, string $Prefix, string $Suffix, int $MinValue, int $MaxValue, int $StepSize)
  * @method void RegisterProfileBoolean(string $Name, string $Icon, string $Prefix, string $Suffix)
  *
  * @property char $NodeId
  * @property int $SessionId
  * @property int $NodeSubType
+ * @property int[] $SessionRunStatus
  */
 class KLF200Node extends IPSModule
 {
@@ -43,9 +47,12 @@ class KLF200Node extends IPSModule
         parent::Create();
         $this->ConnectParent(\KLF200\GUID::Gateway);
         $this->RegisterPropertyInteger(\KLF200\Node\Property::NodeId, -1);
+        $this->RegisterPropertyBoolean(\KLF200\Node\Property::WaitForFinishSession, false);
+        $this->RegisterPropertyBoolean(\KLF200\Node\Property::AutoRename, false);
         $this->RegisterAttributeInteger(\KLF200\Node\Attribute::NodeSubType, -1);
         $this->SessionId = 1;
         $this->NodeSubType = -1;
+        $this->SessionRunStatus = [];
     }
 
     /**
@@ -54,26 +61,16 @@ class KLF200Node extends IPSModule
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $APICommands = [
-            \KLF200\APICommand::GET_NODE_INFORMATION_NTF,
-            \KLF200\APICommand::NODE_INFORMATION_CHANGED_NTF,
-            \KLF200\APICommand::NODE_STATE_POSITION_CHANGED_NTF,
-            \KLF200\APICommand::COMMAND_RUN_STATUS_NTF,
-            \KLF200\APICommand::COMMAND_REMAINING_TIME_NTF,
-            \KLF200\APICommand::SESSION_FINISHED_NTF,
-            \KLF200\APICommand::STATUS_REQUEST_NTF,
-            \KLF200\APICommand::WINK_SEND_NTF,
-            \KLF200\APICommand::MODE_SEND_NTF
-        ];
         $this->SessionId = 1;
+        $this->SessionRunStatus = [];
         $NodeId = $this->ReadPropertyInteger(\KLF200\Node\Property::NodeId);
         $this->NodeId = chr($NodeId);
         if (($NodeId < 0) || ($NodeId > 255)) {
             $Line = 'NOTHING';
         } else {
-            $NodeId = preg_quote(substr(json_encode(utf8_encode(chr($this->ReadPropertyInteger(\KLF200\Node\Property::NodeId)))), 0, -1));
-            foreach ($APICommands as $APICommand) {
-                $Lines[] = '.*"Command":' . $APICommand . ',"Data":' . $NodeId . '.*';
+            //$NodeId = preg_quote(substr(json_encode(utf8_encode(chr($this->ReadPropertyInteger(\KLF200\Node\Property::NodeId)))), 0, -1));
+            foreach (array_keys(\KLF200\APICommand::$EventsToNodeId) as $APICommand) {
+                $Lines[] = '.*"Command":' . $APICommand . ',"NodeID":' . $NodeId . ',.*';
             }
             $Line = implode('|', $Lines);
         }
@@ -81,6 +78,26 @@ class KLF200Node extends IPSModule
         $this->SendDebug('FILTER', $Line, 0);
         $this->NodeSubType = $this->ReadAttributeInteger(\KLF200\Node\Attribute::NodeSubType);
         $this->SetSummary(sprintf('%04X', $this->NodeSubType));
+        $this->RegisterProfileIntegerEx(
+            'KLF200.StatusOwner',
+            '',
+            '',
+            '',
+            [
+                [\KLF200\StatusID::STATUS_LOCAL_USER,       'local activation', '', -1],
+                [\KLF200\StatusID::STATUS_USER,             'Symcon', '', -1],
+                [\KLF200\StatusID::STATUS_RAIN,             'rain sensor activation', '', -1],
+                [\KLF200\StatusID::STATUS_TIMER,            'timer activation', '', -1],
+                [\KLF200\StatusID::STATUS_UPS,              'UPS activation', '', -1],
+                [\KLF200\StatusID::STATUS_PROGRAM,          'program activation', '', -1],
+                [\KLF200\StatusID::STATUS_WIND,             'wind sensor activation', '', -1],
+                [\KLF200\StatusID::STATUS_MYSELF,           'actuator generated activation', '', -1],
+                [\KLF200\StatusID::STATUS_AUTOMATIC_CYCLE,  'automatic cycle activation', '', -1],
+                [\KLF200\StatusID::STATUS_EMERGENCY,        'emergency or security activation', '', -1],
+                [\KLF200\StatusID::STATUS_UNKNOWN,          'unknown source', '', -1]
+            ]
+        );
+
         $this->RegisterProfileInteger('KLF200.Intensity.51200', '', '', ' %', 0, 0xC800, 1);
         $this->RegisterProfileInteger('KLF200.RollerShutter', 'Jalousie', '', ' %', 0, 0xC800, 1);
         $this->RegisterProfileInteger('KLF200.Slats', 'Speedo', '', ' %', 0, 0xC800, 1);
@@ -91,6 +108,9 @@ class KLF200Node extends IPSModule
         $this->RegisterProfileInteger('KLF200.Light.51200.Reversed', 'Light', '', ' %', 0, 0xC800, 1);
         $this->RegisterProfileBoolean('KLF200.Light.Reversed', 'Light', '', '');
         $this->RegisterProfileBoolean('KLF200.Lock', 'Lock', '', '');
+        $this->RegisterVariableInteger('LastSeen', $this->Translate('last seen'), '~UnixTimestamp', 0);
+        $this->RegisterVariableInteger('LastActivation', $this->Translate('last activation'), 'KLF200.StatusOwner', 0);
+        $this->RegisterVariableString('ErrorState', $this->Translate('last error'), '', 0);
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->RequestNodeInformation();
         }
@@ -247,25 +267,21 @@ class KLF200Node extends IPSModule
     public function RequestStatus()
     {
         /*
-          Command               Data 1 – 2 Data 3          Data 4 – 23   Data 24
-          GW_STATUS_REQUEST_REQ SessionID  IndexArrayCount IndexArray    StatusType
-          Data 25    Data 26
-          FPI1       FPI2
-          StatusType
-          value     |Description
-          0       |Request Target position
-          1       |Request Current position
-          2       |Request Remaining time
-          3       |Request Main info.
+          Command               Data 1 – 2 Data 3          Data 4 – 23      Data 24
+          GW_STATUS_REQUEST_REQ SessionID  IndexArrayCount IndexArrayOfInt  StatusType
+          Data 25               Data 26
+          FPI1 (BitFlags)       FPI2 (BitFlags)
          */
-        $Data = $this->NodeId . $this->GetSessionId() . chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-        $Data .= chr(1) . chr(0b11100000) . chr(0);
+        $Data = $this->NodeId . $this->GetSessionId();
+        $SessionID = unpack('n', $Data)[1];
+        $Data .= chr(1) . $this->NodeId . "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
+        $Data .= chr(\KLF200\StatusType::Current_position) . chr(0b11100000) . chr(0);
         $APIData = new \KLF200\APIData(\KLF200\APICommand::STATUS_REQUEST_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
+        $Result = $this->SendAPIData($APIData, $SessionID);
+        if ($Result !== true) {
             return false;
         }
-        return ord($ResultAPIData->Data[2]) == 1;
+        return true;
     }
 
     public function SetMainParameter(int $Value)
@@ -278,7 +294,9 @@ class KLF200Node extends IPSModule
           Data 64   Data 65 Data 66
           PL_0_3    PL_4_7  LockTime
          */
+
         $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $SessionID = unpack('n', $Data)[1];
         $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
         $Data .= chr(0) . chr(0); // Data 6-7
         $Data .= pack('n', $Value); // Data 8-9
@@ -288,11 +306,11 @@ class KLF200Node extends IPSModule
         $Data .= chr(0); // Data 63
         $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
         $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
+        $Result = $this->SendAPIData($APIData, $SessionID);
+        if ($Result !== true) {
             return false;
         }
-        return ord($ResultAPIData->Data[2]) == 1;
+        return true;
     }
 
     public function SetFunctionParameter1(int $Value)
@@ -305,7 +323,9 @@ class KLF200Node extends IPSModule
           Data 64   Data 65 Data 66
           PL_0_3    PL_4_7  LockTime
          */
+
         $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $SessionID = unpack('n', $Data)[1];
         $Data .= chr(1) . chr(3) . chr(1); // Data 3-5
         $Data .= chr(0x80) . chr(0); // Data 6-7
         $Data .= "\xD4\x00"; // Data 8-9 -> ignore
@@ -316,11 +336,11 @@ class KLF200Node extends IPSModule
         $Data .= chr(0); // Data 63
         $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
         $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
+        $Result = $this->SendAPIData($APIData, $SessionID);
+        if ($Result !== true) {
             return false;
         }
-        return ord($ResultAPIData->Data[2]) == 1;
+        return true;
     }
 
     public function SetFunctionParameter2(int $Value)
@@ -334,6 +354,7 @@ class KLF200Node extends IPSModule
           PL_0_3    PL_4_7  LockTime
          */
         $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $SessionID = unpack('n', $Data)[1];
         $Data .= chr(1) . chr(3) . chr(2); // Data 3-5
         $Data .= chr(0x40) . chr(0); // Data 6-7
         $Data .= "\xD4\x00"; // Data 8-9 -> ignore
@@ -345,11 +366,11 @@ class KLF200Node extends IPSModule
         $Data .= chr(0); // Data 63
         $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
         $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
+        $Result = $this->SendAPIData($APIData, $SessionID);
+        if ($Result !== true) {
             return false;
         }
-        return ord($ResultAPIData->Data[2]) == 1;
+        return true;
     }
 
     public function SetFunctionParameter3(int $Value)
@@ -362,7 +383,9 @@ class KLF200Node extends IPSModule
           Data 64   Data 65 Data 66
           PL_0_3    PL_4_7  LockTime
          */
+
         $Data = $this->NodeId . $this->GetSessionId(); //Data 1-2
+        $SessionID = unpack('n', $Data)[1];
         $Data .= chr(1) . chr(3) . chr(0); // Data 3-5
         $Data .= chr(0x20) . chr(0); // Data 6-7
         $Data .= "\xD4\x00"; // Data 8-9 -> ignore
@@ -374,11 +397,11 @@ class KLF200Node extends IPSModule
         $Data .= chr(0); // Data 63
         $Data .= chr(0) . chr(0) . chr(0); // Data 64-66
         $APIData = new \KLF200\APIData(\KLF200\APICommand::COMMAND_SEND_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData === null) {
+        $Result = $this->SendAPIData($APIData, $SessionID);
+        if ($Result !== true) {
             return false;
         }
-        return ord($ResultAPIData->Data[2]) == 1;
+        return true;
     }
 
     public function ReceiveData($JSONString)
@@ -393,6 +416,9 @@ class KLF200Node extends IPSModule
         if (is_a($Data, '\\KLF200\\APIData')) {
             /** @var \KLF200\APIData $Data */
             $this->SendDebugTrait($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
+            if ($Data->NodeID != -1) {
+                $this->SendDebugTrait($Message . ':NodeID', $Data->NodeID, 0);
+            }
             if ($Data->isError()) {
                 $this->SendDebugTrait('Error', $Data->ErrorToString(), 0);
             } elseif ($Data->Data != '') {
@@ -553,6 +579,20 @@ class KLF200Node extends IPSModule
         }
     }
 
+    private function SetParameterValue(int $NodeParameter, int $ParameterValue)
+    {
+        $Ident = ($NodeParameter > 0) ? 'FP' . $NodeParameter : 'MAIN';
+        $this->SendDebug($Ident, sprintf('%04X', $ParameterValue), 0);
+        // nur absolute Werte in Variablen schreiben
+        $VarId = @$this->GetIDForIdent($Ident);
+        if (($VarId > 0) && ($ParameterValue <= 0xC800)) {
+            if (IPS_GetVariable($VarId)['VariableType'] == VARIABLETYPE_BOOLEAN) {
+                $ParameterValue = !($ParameterValue == 0xC800);
+            }
+
+            $this->SetValue($Ident, $ParameterValue);
+        }
+    }
     private function SetValues(int $CurrentPosition, int $FP1CurrentPosition, int $FP2CurrentPosition, int $FP3CurrentPosition)
     {
         // nur absolute Werte in Variablen schreiben
@@ -589,8 +629,8 @@ class KLF200Node extends IPSModule
     private function ReceiveEvent(\KLF200\APIData $APIData)
     {
         switch ($APIData->Command) {
+            case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_NTF:
             case \KLF200\APICommand::GET_NODE_INFORMATION_NTF:
-                $NodeID = ord($APIData->Data[0]);
                 /* Data 1 Data 2 - 3 Data 4    Data 5 - 68 Data 69
                   NodeID  Order      Placement Name        Velocity
                   Data 70 - 71    Data 72      Data 73     Data 74       Data 75   Data 76
@@ -600,10 +640,10 @@ class KLF200Node extends IPSModule
                   Data 94 - 95       Data 96 - 97       Data 98 - 99  Data 100 - 103 Data 104   Data 105 - 125
                   FP3CurrentPosition FP4CurrentPosition RemainingTime TimeStamp      NbrOfAlias AliasArray
                  */
-
+                $NodeID = ord($APIData->Data[0]);
                 $Name = trim(substr($APIData->Data, 4, 64));
                 $NodeTypeSubType = unpack('n', substr($APIData->Data, 69, 2))[1];
-                $this->SendDebug('NodeID', $NodeID, 0);
+                $this->SendDebug('NodeID (' . $APIData->NodeID . ')', $NodeID, 0);
                 $this->SendDebug('Name', $Name, 0);
                 $this->SendDebug('NodeTypeSubType', sprintf('%04X', $NodeTypeSubType), 0);
                 $this->SendDebug('NodeTypeSubType', \KLF200\Node::$SubType[$NodeTypeSubType], 0);
@@ -635,19 +675,23 @@ class KLF200Node extends IPSModule
                   $this->SendDebug('FP4CurrentPosition', sprintf('%04X', $FP4CurrentPosition), 0);
                   $RemainingTime = unpack('n', substr($APIData->Data, 97, 2))[1];
                   $this->SendDebug('RemainingTime', $RemainingTime, 0);
-                  $TimeStamp = unpack('N', substr($APIData->Data, 99, 4))[1];
-                  $this->SendDebug('TimeStamp', $TimeStamp, 0);
-                  $this->SendDebug('TimeStamp', strftime('%H:%M:%S %d.%m.%Y', $TimeStamp), 0);
                  */
+                $TimeStamp = unpack('N', substr($APIData->Data, 99, 4))[1];
+                $this->SendDebug('TimeStamp', $TimeStamp, 0);
+                $this->SetValue('LastSeen', $TimeStamp);
                 if ($NodeTypeSubType != $this->NodeSubType) {
                     $this->WriteAttributeInteger(\KLF200\Node\Attribute::NodeSubType, $NodeTypeSubType);
                     $this->SetSummary(sprintf('%04X', $NodeTypeSubType));
                     $this->RegisterNodeVariables($NodeTypeSubType);
                 }
                 $this->SetValues($CurrentPosition, $FP1CurrentPosition, $FP2CurrentPosition, $FP3CurrentPosition);
-                break;
-                /* case \KLF200\APICommand::NODE_INFORMATION_CHANGED_NTF:
-                  break; */
+                $this->AutoRename($Name);
+                return;
+            case \KLF200\APICommand::NODE_INFORMATION_CHANGED_NTF:
+                $Name = trim(substr($APIData->Data, 4, 64));
+                $this->SendDebug('Name', $Name, 0);
+                $this->AutoRename($Name);
+                return;
             case \KLF200\APICommand::NODE_STATE_POSITION_CHANGED_NTF:
                 /*
                   Data 1 Data 2 Data 3 - 4      Data 5 - 6
@@ -657,6 +701,8 @@ class KLF200Node extends IPSModule
                   Data 17 - 20
                   TimeStamp
                  */
+                $NodeID = ord($APIData->Data[0]);
+                $this->SendDebug('NodeID (' . $APIData->NodeID . ')', $NodeID, 0);
                 $State = ord($APIData->Data[1]);
                 $this->SendDebug('State', \KLF200\State::ToString($State), 0);
                 $CurrentPosition = unpack('n', substr($APIData->Data, 2, 2))[1];
@@ -672,17 +718,22 @@ class KLF200Node extends IPSModule
                   $this->SendDebug('FP3CurrentPosition', sprintf('%04X', $FP3CurrentPosition), 0);
                   $FP4CurrentPosition = unpack('n', substr($APIData->Data, 12, 2))[1];
                   $this->SendDebug('FP4CurrentPosition', sprintf('%04X', $FP4CurrentPosition), 0);
+                  $RemainingTime = unpack('n', substr($APIData->Data, 14, 2))[1];
+                  $this->SendDebug('RemainingTime', $RemainingTime, 0);
                  */
-                $RemainingTime = unpack('n', substr($APIData->Data, 14, 2))[1];
-                $this->SendDebug('RemainingTime', $RemainingTime, 0);
-                $TimeStamp = unpack('N', substr($APIData->Data, 16, 4))[1];
+                if (substr($APIData->Data, 18, 2) == "\x00\x00") { //Timestamp Bug
+                    // fixit
+                    $TimeStamp = (time() & 0xffff0000) ^ (unpack('n', substr($APIData->Data, 16, 2))[1]);
+                } else {
+                    $TimeStamp = unpack('N', substr($APIData->Data, 16, 4))[1];
+                }
                 $this->SendDebug('TimeStamp', $TimeStamp, 0);
-                $this->SendDebug('TimeStamp', strftime('%H:%M:%S %d.%m.%Y', $TimeStamp), 0);
+                $this->SetValue('LastSeen', $TimeStamp);
                 if ($State == \KLF200\State::DONE) {
                     // Wert $CurrentPosition umrechnen und setzen
                     $this->SetValues($CurrentPosition, $FP1CurrentPosition, $FP2CurrentPosition, $FP3CurrentPosition);
                 }
-                break;
+                return;
             case \KLF200\APICommand::COMMAND_RUN_STATUS_NTF:
                 // 00 06 01 00 00 FF FF 01 02 0E 00 00 00
                 /*
@@ -693,6 +744,13 @@ class KLF200Node extends IPSModule
                   Data 8    Data 9      Data 10 - 13
                   RunStatus StatusReply InformationCode
                  */
+
+                $SessionID = unpack('n', substr($APIData->Data, 0, 2))[1];
+                $this->SendDebug('SessionID', sprintf('%04X', $SessionID), 0);
+                $StatusID = ord($APIData->Data[2]);
+                $this->SendDebug('StatusID', $StatusID, 0);
+                $this->SendDebug('StatusID', \KLF200\StatusID::ToString($StatusID), 0);
+                $this->SetValue('LastActivation', $StatusID);
                 $NodeParameter = ord($APIData->Data[4]);
                 $this->SendDebug('NodeParameter', $NodeParameter, 0);
                 $ParameterValue = unpack('n', substr($APIData->Data, 5, 2))[1];
@@ -701,20 +759,20 @@ class KLF200Node extends IPSModule
                 $this->SendDebug('RunStatus', \KLF200\RunStatus::ToString($RunStatus), 0);
                 $StatusReply = ord($APIData->Data[8]);
                 $this->SendDebug('StatusReply', \KLF200\StatusReply::ToString($StatusReply), 0);
-                if ($RunStatus == \KLF200\RunStatus::EXECUTION_FAILED) {
-                    trigger_error($this->Translate(\KLF200\RunStatus::ToString($RunStatus)), E_USER_NOTICE);
-                    return;
+                $this->SetValue('ErrorState', $this->Translate(\KLF200\StatusReply::ToString($StatusReply)));
+                if ($RunStatus == \KLF200\RunStatus::EXECUTION_COMPLETED) {
+                    $this->SetParameterValue($NodeParameter, $ParameterValue);
                 }
-
-                break;
+                if (!$this->SessionQueueUpdate($SessionID, $RunStatus, $StatusReply)) {
+                    if ($RunStatus == \KLF200\RunStatus::EXECUTION_FAILED) {
+                        $this->SendDebug('Error', \KLF200\StatusReply::ToString($StatusReply), 0);
+                        trigger_error($this->Translate(\KLF200\StatusReply::ToString($StatusReply)), E_USER_NOTICE);
+                    }
+                }
+                return;
             case \KLF200\APICommand::COMMAND_REMAINING_TIME_NTF:
-                break;
-            case \KLF200\APICommand::SESSION_FINISHED_NTF:
-                break;
+                return;
             case \KLF200\APICommand::STATUS_REQUEST_NTF:
-                //00 00 01 00 01 02 FF 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-                //01 05 01 01 00 01 01
-
                 /*
                   Command                Data 1 – 2 Data 3   Data 4    Data 5    Data 6
                   GW_STATUS_REQUEST_NTF  SessionID  StatusID NodeIndex RunStatus StatusReply
@@ -735,41 +793,63 @@ class KLF200Node extends IPSModule
                  *      Data 14 - 17                Data 18
                  *      LastMasterExecutionAddress  LastCommandOriginator
                  */
+
+                $SessionID = unpack('n', substr($APIData->Data, 0, 2))[1];
+                $this->SendDebug('SessionID', sprintf('%04X', $SessionID), 0);
                 $StatusID = ord($APIData->Data[2]);
                 $this->SendDebug('StatusID', $StatusID, 0);
+                $this->SendDebug('StatusID', \KLF200\StatusID::ToString($StatusID), 0);
+                $this->SetValue('LastActivation', $StatusID);
                 $NodeIndex = ord($APIData->Data[3]);
                 $this->SendDebug('NodeIndex', $NodeIndex, 0);
                 $RunStatus = ord($APIData->Data[4]);
                 $this->SendDebug('RunStatus', \KLF200\RunStatus::ToString($RunStatus), 0);
                 $StatusReply = ord($APIData->Data[5]);
                 $this->SendDebug('StatusReply', \KLF200\StatusReply::ToString($StatusReply), 0);
+                $this->SetValue('ErrorState', $this->Translate(\KLF200\StatusReply::ToString($StatusReply)));
                 $StatusType = ord($APIData->Data[6]);
-                $this->SendDebug('StatusType', $StatusType, 0);
-                if ($StatusType == 0xFF) {
-                    $this->SendDebug('Error', \KLF200\StatusReply::ToString($StatusReply), 0);
-                    trigger_error($this->Translate(\KLF200\StatusReply::ToString($StatusReply)), E_USER_NOTICE);
-                    return;
-                }
-                if ($StatusType == 0x01) {
-                    $ParameterCount = ord($APIData->Data[7]);
-                    $this->SendDebug('ParameterCount', $ParameterCount, 0);
-                    $ParameterData = substr($APIData->Data, 8);
-                    $Data = [
-                        0 => 0xF7FF,
-                        1 => 0xF7FF,
-                        2 => 0xF7FF,
-                        3 => 0xF7FF
-                    ];
-                    for ($index = 0; $index < $ParameterCount; $index++) {
-                        $Data[ord($ParameterData[$index * 3])] = unpack('n', substr($ParameterData, ($index * 3) + 1, 2))[1];
+                $this->SendDebug('StatusType', \KLF200\StatusType::ToString($StatusType), 0);
+                if ($RunStatus == \KLF200\RunStatus::EXECUTION_COMPLETED) {
+                    switch ($StatusType) {
+                        case \KLF200\StatusType::Target_position:
+                            break;
+                        case \KLF200\StatusType::Current_position:
+                            $ParameterCount = ord($APIData->Data[7]);
+                            $this->SendDebug('ParameterCount', $ParameterCount, 0);
+                            $ParameterData = substr($APIData->Data, 8);
+                            for ($index = 0; $index < $ParameterCount; $index++) {
+                                $NodeParameter = ord($ParameterData[$index * 3]);
+                                $ParameterValue = unpack('n', substr($ParameterData, ($index * 3) + 1, 2))[1];
+                                $this->SetParameterValue($NodeParameter, $ParameterValue);
+                            }
+                            break;
+                        case \KLF200\StatusType::Remaining_time:
+                            break;
+                        case \KLF200\StatusType::Main_info:
+                            break;
                     }
-                    $this->SetValues($Data[0], $Data[1], $Data[2], $Data[3]);
                 }
-                break;
-            case \KLF200\APICommand::WINK_SEND_NTF:
-                break;
-            case \KLF200\APICommand::MODE_SEND_NTF:
-                break;
+                if (!$this->SessionQueueUpdate($SessionID, $RunStatus, $StatusReply)) {
+                    if ($RunStatus == \KLF200\RunStatus::EXECUTION_FAILED) {
+                        $this->SendDebug('Error', \KLF200\StatusReply::ToString($StatusReply), 0);
+                        trigger_error($this->Translate(\KLF200\StatusReply::ToString($StatusReply)), E_USER_NOTICE);
+                    }
+                }
+                return;
+            case \KLF200\APICommand::SESSION_FINISHED_NTF:
+                $SessionID = unpack('n', substr($APIData->Data, 0, 2))[1];
+                $this->SendDebug('SessionID', sprintf('%04X', $SessionID), 0);
+                $this->SessionQueueUpdateFinished($SessionID);
+                return;
+        }
+    }
+
+    private function AutoRename(string $Name)
+    {
+        if ($this->ReadPropertyBoolean(\KLF200\Node\Property::AutoRename)) {
+            if ($Name != IPS_GetName($this->InstanceID)) {
+                IPS_SetName($this->InstanceID, $Name);
+            }
         }
     }
 
@@ -780,29 +860,153 @@ class KLF200Node extends IPSModule
         return chr($SessionId);
     }
 
-    private function SendAPIData(\KLF200\APIData $APIData)
+    /**
+     * SendAPIData
+     *
+     * @param  mixed $APIData
+     * @param  int $SessionId
+     * @return ?\KLF200\APIData|bool
+     */
+    private function SendAPIData(\KLF200\APIData $APIData, int $SessionId = -1)
     {
         if ($this->NodeId == chr(-1)) {
             return null;
         }
         $this->SendDebug('ForwardData', $APIData, 1);
-
         try {
             if (!$this->HasActiveParent()) {
                 throw new Exception($this->Translate('Instance has no active parent.'), E_USER_NOTICE);
+            }
+            if ($this->ReadPropertyBoolean(\KLF200\Node\Property::WaitForFinishSession)) {
+                $this->SessionQueueAdd($SessionId);
             }
             /** @var \KLF200\APIData $ResponseAPIData */
             $ret = @$this->SendDataToParent($APIData->ToJSON(\KLF200\GUID::ToGateway));
             $ResponseAPIData = @unserialize($ret);
             $this->SendDebug('Response', $ResponseAPIData, 1);
             if ($ResponseAPIData->isError()) {
+                $this->SessionQueueRemove($SessionId);
                 trigger_error($this->Translate($ResponseAPIData->ErrorToString()), E_USER_NOTICE);
                 return null;
             }
-            return $ResponseAPIData;
+            if ($SessionId == -1) {
+                return $ResponseAPIData;
+            }
+            //$ResultSessionId = unpack('n', substr($ResponseAPIData->Data, 0, 2))[1];
+            $ResultStatus = (ord($ResponseAPIData->Data[2]) == 1);
+            if (!$ResultStatus) {
+                $this->SessionQueueRemove($SessionId);
+                trigger_error($this->Translate('Command is rejected'), E_USER_NOTICE);
+                return false;
+            }
+            if (!$this->ReadPropertyBoolean(\KLF200\Node\Property::WaitForFinishSession)) {
+                return $ResultStatus;
+            }
+            $SessionStatus = $this->SessionQueueWaitForFinish($SessionId);
+            if ($SessionStatus['RunStatus'] == \KLF200\RunStatus::EXECUTION_FAILED) {
+                $this->SendDebug('Error', \KLF200\StatusReply::ToString($SessionStatus['StatusReply']), 0);
+                trigger_error($this->Translate(\KLF200\StatusReply::ToString($SessionStatus['StatusReply'])), E_USER_NOTICE);
+            }
+            return $SessionStatus['RunStatus'] == \KLF200\RunStatus::EXECUTION_COMPLETED;
         } catch (Exception $exc) {
+            $this->SessionQueueRemove($SessionId);
             $this->SendDebug('Error', $exc->getMessage(), 0);
             return null;
         }
+    }
+
+    private function SessionQueueAdd(int $SessionId)
+    {
+        if ($SessionId == -1) {
+            return;
+        }
+        $this->SendDebug('SessionQueueAdd', sprintf('%04X', $SessionId), 0);
+        $this->lock('SessionRunStatus');
+        $SessionRunStatus = $this->SessionRunStatus;
+        $SessionRunStatus[$SessionId] = [
+            'Finished'  => false,
+            'RunStatus' => \KLF200\RunStatus::EXECUTION_ACTIVE
+        ];
+        $this->SessionRunStatus = $SessionRunStatus;
+        $this->unlock('SessionRunStatus');
+    }
+
+    private function SessionQueueUpdate(int $SessionId, int $RunStatus, int $StatusReply)
+    {
+        if ($SessionId == -1) {
+            return false;
+        }
+        $this->lock('SessionRunStatus');
+        $SessionRunStatus = $this->SessionRunStatus;
+        if (!array_key_exists($SessionId, $SessionRunStatus)) {
+            $this->unlock('SessionRunStatus');
+            return false;
+        }
+        $SessionRunStatus[$SessionId]['RunStatus'] = $RunStatus;
+        $SessionRunStatus[$SessionId]['StatusReply'] = $StatusReply;
+        $this->SessionRunStatus = $SessionRunStatus;
+        $this->unlock('SessionRunStatus');
+        $this->SendDebug('SessionQueueUpdate', sprintf('%04X', $SessionId), 0);
+        return true;
+    }
+
+    private function SessionQueueUpdateFinished(int $SessionId)
+    {
+        if ($SessionId == -1) {
+            return false;
+        }
+        $this->lock('SessionRunStatus');
+        $SessionRunStatus = $this->SessionRunStatus;
+        if (!array_key_exists($SessionId, $SessionRunStatus)) {
+            $this->unlock('SessionRunStatus');
+            return false;
+        }
+        $SessionRunStatus[$SessionId]['Finished'] = true;
+        $this->SessionRunStatus = $SessionRunStatus;
+        $this->unlock('SessionRunStatus');
+        $this->SendDebug('SessionQueueUpdateFinished', sprintf('%04X', $SessionId), 0);
+        return true;
+    }
+
+    private function SessionQueueWaitForFinish(int $SessionId)
+    {
+        for ($i = 0; $i < 6000; $i++) {
+            $this->lock('SessionRunStatus');
+            $SessionRunStatus = $this->SessionRunStatus;
+            $this->unlock('SessionRunStatus');
+            if (!array_key_exists($SessionId, $SessionRunStatus)) {
+                return [
+                    'RunStatus'  => \KLF200\RunStatus::EXECUTION_FAILED,
+                    'StatusReply'=> \KLF200\StatusReply::UNKNOWN_STATUS_REPLY
+                ];
+            }
+            if ($SessionRunStatus[$SessionId]['Finished']) {
+                $this->SessionQueueRemove($SessionId);
+                $this->SendDebug('SessionQueueWaitForFinish', sprintf('%04X', $SessionId), 0);
+                return $SessionRunStatus[$SessionId];
+            }
+            IPS_Sleep(10);
+        }
+        $this->SessionQueueRemove($SessionId);
+        $this->SendDebug('SessionQueueWaitForFinishTimeout', sprintf('%04X', $SessionId), 0);
+        return [
+            'RunStatus'  => \KLF200\RunStatus::EXECUTION_FAILED,
+            'StatusReply'=> \KLF200\StatusReply::UNKNOWN_STATUS_REPLY
+        ];
+    }
+
+    private function SessionQueueRemove(int $SessionId)
+    {
+        if ($SessionId == -1) {
+            return;
+        }
+        $this->lock('SessionRunStatus');
+        $SessionRunStatus = $this->SessionRunStatus;
+        if (array_key_exists($SessionId, $SessionRunStatus)) {
+            $this->SendDebug('SessionQueueRemove', sprintf('%04X', $SessionId), 0);
+            unset($SessionRunStatus[$SessionId]);
+        }
+        $this->SessionRunStatus = $SessionRunStatus;
+        $this->unlock('SessionRunStatus');
     }
 }
