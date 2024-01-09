@@ -62,7 +62,7 @@ In dem sich öffnenden Konfigurationsformular ist die `Node ID` des Gerätes ein
 | AutoRename           | Instanz umbenennen, wenn sich der Name in KLF200 ändert |
 
 **(*) Wichtig:**  
-Wird diese Option aktiviert, so wartet die Instanz bei einer Ansteuerung eines Gerätes auf die Beendigung der Aktion!  
+Wird diese Option aktiviert, so wartet die Instanz bei einer Ansteuerung eines Gerätes maximal 60 Sekunden auf die Beendigung der Aktion!  
 Solange die Aktion noch läuft und das Gerät nicht 'fertig' (oder Fehler) gemeldet hat, wird im WebFront die Aktion auch als laufend Angezeigt bzw. wird ein PHP-Skript welches eine Aktion mit `KLF200_SetMainParameter` gestartet hat, blockiert.  
 Der Vorteil ist jedoch, sollte ein Gerät seine Aktion nicht abschließen können, so wird die Fehlermeldung unmittelbar im WebFront bzw. PHP-Skript ausgegeben.  
 
