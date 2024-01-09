@@ -80,6 +80,7 @@ Es wird empfohlen die Einrichtung mit der Discovery-Instanz zu starten ([KLF200 
  - Internen Datenaustausch überarbeitet, da einige Events nicht in den Node Instanzen verarbeitet wurden.  
  - Node Instanzen können automatisch den Namen aus dem KLF200 übernehmen.  
  - Node Instanz hat bool Werte invertiert abgebildet.  
+ - Node Instanz zeigt an ob ein Node arbeitet oder nicht.  
  - Node Instanz führt den aktuellen Status nach, wenn sich die Gateway Instanz verbindet.  
  - Node Instanz schreibt den Grund der letzten Aktivierung in eine Statusvariable. (**Wind & Regensensor**)  
  - Node Instanz kann jetzt auch auf dem Zustand vom Gerät warten.  

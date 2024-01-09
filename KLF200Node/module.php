@@ -23,6 +23,8 @@ eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DI
  * @method void RegisterProfileIntegerEx(string $Name, string $Icon, string $Prefix, string $Suffix, array $Associations, int $MaxValue = -1, int $StepSize = 0)
  * @method void RegisterProfileInteger(string $Name, string $Icon, string $Prefix, string $Suffix, int $MinValue, int $MaxValue, int $StepSize)
  * @method void RegisterProfileBoolean(string $Name, string $Icon, string $Prefix, string $Suffix)
+ * @method void RegisterProfileBooleanEx($Name, $Icon, $Prefix, $Suffix, $Associations)
+ * @method void  UnregisterProfile(string $Name)
  *
  * @property char $NodeId
  * @property int $SessionId
@@ -106,11 +108,17 @@ class KLF200Node extends IPSModule
         $this->RegisterProfileInteger('KLF200.Heating.Reversed', 'Temperature', '', ' %', 0, 0xC800, 1);
         $this->RegisterProfileInteger('KLF200.Garage', 'Garage', '', ' %', 0, 0xC800, 1);
         $this->RegisterProfileInteger('KLF200.Light.51200.Reversed', 'Light', '', ' %', 0, 0xC800, 1);
-        $this->RegisterProfileBoolean('KLF200.Light.Reversed', 'Light', '', '');
-        $this->RegisterProfileBoolean('KLF200.Lock', 'Lock', '', '');
+        $this->UnregisterProfile('KLF200.Light.Reversed');
+        $this->UnregisterProfile('KLF200.Lock');
+        $this->RegisterProfileBooleanEx('KLF200.RunStatus', 'Gear', '', '', [
+            [false, 'stopped', '', -1],
+            [true, 'running', '', 0x0000ff],
+
+        ]);
         $this->RegisterVariableInteger('LastSeen', $this->Translate('last seen'), '~UnixTimestamp', 0);
         $this->RegisterVariableInteger('LastActivation', $this->Translate('last activation'), 'KLF200.StatusOwner', 0);
         $this->RegisterVariableString('ErrorState', $this->Translate('last error'), '', 0);
+        $this->RegisterVariableBoolean('RunStatus', $this->Translate('run status'), 'KLF200.RunStatus', 0);
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->RequestNodeInformation();
         }
@@ -480,7 +488,7 @@ class KLF200Node extends IPSModule
                 $this->UnregisterVariable('FP3');
                 break;
             case 0x01BA: //Light only supporting on/off
-                $this->RegisterVariableBoolean('MAIN', $this->Translate('State'), 'KLF200.Light.Reversed', 0);
+                $this->RegisterVariableBoolean('MAIN', $this->Translate('State'), '~Switch', 0);
                 $this->UnregisterVariable('FP1');
                 $this->UnregisterVariable('FP2');
                 $this->UnregisterVariable('FP3');
@@ -494,7 +502,7 @@ class KLF200Node extends IPSModule
                 break;
             case 0x0240: //Door lock
             case 0x0241: //Window lock
-                $this->RegisterVariableBoolean('MAIN', $this->Translate('Lock'), 'KLF200.Lock', 0);
+                $this->RegisterVariableBoolean('MAIN', $this->Translate('Lock'), '~Lock', 0);
                 $this->UnregisterVariable('FP1');
                 $this->UnregisterVariable('FP2');
                 $this->UnregisterVariable('FP3');
@@ -757,6 +765,7 @@ class KLF200Node extends IPSModule
                 $this->SendDebug('ParameterValue', sprintf('%04X', $ParameterValue), 0);
                 $RunStatus = ord($APIData->Data[7]);
                 $this->SendDebug('RunStatus', \KLF200\RunStatus::ToString($RunStatus), 0);
+                $this->SetValue('RunStatus', $RunStatus == \KLF200\RunStatus::EXECUTION_ACTIVE);
                 $StatusReply = ord($APIData->Data[8]);
                 $this->SendDebug('StatusReply', \KLF200\StatusReply::ToString($StatusReply), 0);
                 $this->SetValue('ErrorState', $this->Translate(\KLF200\StatusReply::ToString($StatusReply)));
@@ -804,6 +813,7 @@ class KLF200Node extends IPSModule
                 $this->SendDebug('NodeIndex', $NodeIndex, 0);
                 $RunStatus = ord($APIData->Data[4]);
                 $this->SendDebug('RunStatus', \KLF200\RunStatus::ToString($RunStatus), 0);
+                $this->SetValue('RunStatus', $RunStatus == \KLF200\RunStatus::EXECUTION_ACTIVE);
                 $StatusReply = ord($APIData->Data[5]);
                 $this->SendDebug('StatusReply', \KLF200\StatusReply::ToString($StatusReply), 0);
                 $this->SetValue('ErrorState', $this->Translate(\KLF200\StatusReply::ToString($StatusReply)));

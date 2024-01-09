@@ -83,6 +83,7 @@ Entsprechend sind auch der Name und das Profil beim anlegen der Instanz je nach 
 | letzte Aktivierung | integer | LastActivation | Quelle der letzte Ansteuerung des Gerätes |
 | zuletzt gesehen    | integer | LastSeen       | UnixTimestamp der letzten Meldung         |
 | letzter Fehler     | string  | ErrorState     | Letzter Fehlerstatus                      |
+| Laufstatus         | boolean | RunStatus      | Arbeitet der Node gerade                  |
 
 **Statusvariable MAIN:**  
 
@@ -119,9 +120,8 @@ Entsprechend sind auch der Name und das Profil beim anlegen der Instanz je nach 
  
 | Name                        | Typ     | verwendet von Statusvariablen  (Ident) |
 | :-------------------------- | :------ | :------------------------------------- |
-| KLF200.StatusOwner          | integer | STATUS                                 |
-| KLF200.Light.Reversed       | boolean | MAIN                                   |
-| KLF200.Lock                 | boolean | MAIN                                   |
+| KLF200.RunStatus            | boolean | RunStatus                              |
+| KLF200.StatusOwner          | integer | LastActivation                         |
 | KLF200.Blind                | integer | MAIN                                   |
 | KLF200.RollerShutter        | integer | MAIN, FP1, FP2                         |
 | KLF200.Window               | integer | MAIN                                   |
