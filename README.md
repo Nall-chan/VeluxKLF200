@@ -54,6 +54,7 @@ ermöglicht die Einbindung von allen io-homecontrol® Geräten, welche von diese
 
   Über den `Module-Store` in IPS das Modul `VELUX KLF200` hinzufügen.  
    **Bei kommerzieller Nutzung (z.B. als Errichter oder Integrator) wenden Sie sich bitte an den Autor.**  
+![Module-Store](imgs/install.png)  
 
 ## 4. Einrichten der Instanzen in IP-Symcon
 
