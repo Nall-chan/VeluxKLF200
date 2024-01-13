@@ -924,7 +924,7 @@ class KLF200Node extends IPSModule
             return null;
         }
     }
-
+    //################# SessionQueue
     private function SessionQueueAdd(int $SessionId)
     {
         if ($SessionId == -1) {
@@ -1015,8 +1015,8 @@ class KLF200Node extends IPSModule
         if (array_key_exists($SessionId, $SessionRunStatus)) {
             $this->SendDebug('SessionQueueRemove', sprintf('%04X', $SessionId), 0);
             unset($SessionRunStatus[$SessionId]);
+            $this->SessionRunStatus = $SessionRunStatus;
         }
-        $this->SessionRunStatus = $SessionRunStatus;
         $this->unlock('SessionRunStatus');
     }
 }

@@ -149,16 +149,18 @@ class KLF200Discovery extends IPSModule
         $InstanceIDList = IPS_GetInstanceListByModuleID(\KLF200\GUID::Configurator);
         $Devices = [];
         foreach ($InstanceIDList as $InstanceID) {
+            $Host = '';
             $SplitterID = IPS_GetInstance($InstanceID)['ConnectionID'];
             if ($SplitterID > 0) {
                 $IO = IPS_GetInstance($SplitterID)['ConnectionID'];
                 if ($IO > 0) {
                     $parentGUID = IPS_GetInstance($IO)['ModuleInfo']['ModuleID'];
                     if ($parentGUID == \KLF200\GUID::ClientSocket) {
-                        $Devices[$InstanceID] = strtolower(IPS_GetProperty($IO, \KLF200\ClientSocket\Property::Host));
+                        $Host = strtolower(IPS_GetProperty($IO, \KLF200\ClientSocket\Property::Host));
                     }
                 }
             }
+            $Devices[$InstanceID] = $Host;
         }
         return $Devices;
     }

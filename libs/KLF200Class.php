@@ -615,7 +615,7 @@ namespace KLF200{
             return in_array($APICommand, self::$NotifyCommand);
         }
 
-        public static function ToString($APICommand)
+        public static function ToString(int $APICommand)
         {
             switch ($APICommand) {
                 case self::ERROR_NTF:
