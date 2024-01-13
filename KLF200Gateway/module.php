@@ -412,7 +412,7 @@ class KLF200Gateway extends IPSModule
     private function SetHouseStatusMonitor()
     {
         $APIData = new \KLF200\APIData(\KLF200\APICommand::HOUSE_STATUS_MONITOR_ENABLE_REQ);
-        $ResultAPIData = $this->SendAPIData($APIData);
+        $ResultAPIData = $this->SendAPIData($APIData, false);
         return !$ResultAPIData->isError();
     }
 
