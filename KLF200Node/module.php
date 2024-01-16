@@ -902,8 +902,7 @@ class KLF200Node extends IPSModule
             if ($SessionId == -1) {
                 return $ResponseAPIData;
             }
-            //$ResultSessionId = unpack('n', substr($ResponseAPIData->Data, 0, 2))[1];
-            $ResultStatus = (ord($ResponseAPIData->Data[2]) == 1);
+            $ResultStatus = (ord($ResponseAPIData->Data[0]) == 0);
             if (!$ResultStatus) {
                 $this->SessionQueueRemove($SessionId);
                 trigger_error($this->Translate('Command is rejected'), E_USER_NOTICE);

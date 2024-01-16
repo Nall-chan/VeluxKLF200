@@ -12,6 +12,7 @@ namespace KLF200{
         //KLF200
         public const Gateway = '{725D4DF6-C8FC-463C-823A-D3481A3D7003}';
         public const Node = '{4EBD07B1-2962-4531-AC5F-7944789A9CE5}';
+        public const Scene = '{4E0650E4-2CDE-47A1-99F8-2C695FAC25E7}';
         public const Configurator = '{38724E6E-8202-4D37-9FA7-BDD2EDA79520}';
         //Dataflow
         public const ToGateway = '{7B0F87CC-0408-4283-8E0E-2D48141E42E8}';
@@ -517,6 +518,7 @@ namespace KLF200{
         public const GET_SCENE_INFORMATION_NTF = 0x0411; //Acknowledge to GET_SCENE_INFORMATION_REQ.
         public const ACTIVATE_SCENE_REQ = 0x0412; //Request gateway to enter a scene.
         public const ACTIVATE_SCENE_CFM = 0x0413; //Acknowledge to ACTIVATE_SCENE_REQ.
+        public const ACTIVATE_SCENE_NTF = 0x0414;
         public const STOP_SCENE_REQ = 0x0415; //Request all nodes in a given scene to stop at their current position.
         public const STOP_SCENE_CFM = 0x0416; //Acknowledge to STOP_SCENE_REQ.
         public const SCENE_INFORMATION_CHANGED_NTF = 0x0419; //A scene has either been changed or removed.
@@ -608,6 +610,10 @@ namespace KLF200{
             self::COMMAND_REMAINING_TIME_NTF      => 2,
             self::SESSION_FINISHED_NTF            => 0,
             self::STATUS_REQUEST_NTF              => 3
+        ];
+
+        public static $EventsToScenes = [
+            self::ACTIVATE_SCENE_NTF            => 0
         ];
 
         public static function isEvent(int $APICommand)
@@ -989,6 +995,19 @@ namespace KLF200\Node{
     class Attribute
     {
         public const NodeSubType = 'NodeSubType';
+    }
+}
+
+namespace KLF200\Scene{
+    class Property
+    {
+        public const SceneId = 'SceneId';
+        public const AutoRename = 'AutoRename';
+    }
+
+    class Attribute
+    {
+        public const SceneList = 'SceneList';
     }
 }
 

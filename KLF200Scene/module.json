@@ -1,0 +1,18 @@
+{
+    "id": "{4E0650E4-2CDE-47A1-99F8-2C695FAC25E7}",
+    "name": "KLF200 Scene",
+    "type": 3,
+    "vendor": "VELUX",
+    "aliases": [
+        "KLF200 Scene"
+    ],
+    "parentRequirements": [
+        "{7B0F87CC-0408-4283-8E0E-2D48141E42E8}"
+    ],
+    "childRequirements": [],
+    "implemented": [
+        "{5242DAEF-EEBD-441F-AB0B-E83C01475B65}"
+    ],
+    "prefix": "KLF200",
+    "url": "https://github.com/Nall-chan/VeluxKLF200/blob/master/KLF200Scene/README.md"
+}

@@ -22,6 +22,8 @@ eval('declare(strict_types=1);namespace KLF200Configurator {?>' . file_get_conte
  * @property int $ParentID
  * @property array $Nodes
  * @property array $TempNodes
+ * @property array $Scenes
+ * @property array $TempScenes
  */
 class KLF200Configurator extends IPSModule
 {
@@ -44,6 +46,8 @@ class KLF200Configurator extends IPSModule
         //$this->GetNodeInfoIsRunning = false;
         $this->Nodes = [];
         $this->TempNodes = [];
+        $this->Scenes = [];
+        $this->TempScenes = [];
         $this->ParentID = 0;
     }
 
@@ -61,7 +65,8 @@ class KLF200Configurator extends IPSModule
         $APICommands = [
             \KLF200\APICommand::GET_ALL_NODES_INFORMATION_NTF,
             \KLF200\APICommand::GET_ALL_NODES_INFORMATION_FINISHED_NTF,
-            \KLF200\APICommand::NODE_INFORMATION_CHANGED_NTF
+            \KLF200\APICommand::NODE_INFORMATION_CHANGED_NTF,
+            \KLF200\APICommand::GET_SCENE_LIST_NTF
         ];
 
         if (count($APICommands) > 0) {
@@ -95,19 +100,6 @@ class KLF200Configurator extends IPSModule
         if ($this->IORequestAction($Ident, $Value)) {
             return true;
         }
-        /*
-        if ($Ident == 'GetAllNodesInformation') {
-            if ($Value) {
-                if ($this->GetAllNodesInformation()) {
-                    while ($this->GetNodeInfoIsRunning) {
-                        IPS_Sleep(10);
-                    }
-                    return true;
-                }
-            } else {
-                return $this->GetAllNodesInformation();
-            }
-        }*/
         return false;
     }
 
@@ -155,6 +147,7 @@ class KLF200Configurator extends IPSModule
         return true;
     }
 
+    //todo scenes
     public function GetConfigurationForm()
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
@@ -220,7 +213,6 @@ class KLF200Configurator extends IPSModule
     {
         if ($State == IS_ACTIVE) {
             $this->UpdateFormField('GatewayCommands', 'visible', true);
-            //$this->GetAllNodesInformation();
         } else {
             $this->Nodes = [];
             $this->TempNodes = [];
@@ -232,14 +224,7 @@ class KLF200Configurator extends IPSModule
             $this->UpdateFormField('Config', 'values', json_encode($NodeValues));
             $this->UpdateFormField('RemoveNode', 'values', json_encode([]));
             $this->UpdateFormField('GatewayCommands', 'visible', false);
-            //$this->ReloadForm();
         }
-    }
-
-    protected function UpdateFormField($Name, $Field, $Value)
-    {
-        $this->SendDebug('Form: ' . $Name . '.' . $Field, $Value, 0);
-        parent::UpdateFormField($Name, $Field, $Value);
     }
 
     protected function SendDebug($Message, $Data, $Format)
@@ -247,9 +232,6 @@ class KLF200Configurator extends IPSModule
         if (is_a($Data, '\\KLF200\\APIData')) {
             /** @var \KLF200\APIData $Data */
             $this->SendDebugTrait($Message . ':Command', \KLF200\APICommand::ToString($Data->Command), 0);
-            if ($Data->NodeID != -1) {
-                $this->SendDebugTrait($Message . ':NodeID', $Data->NodeID, 0);
-            }
             if ($Data->isError()) {
                 $this->SendDebugTrait('Error', $Data->ErrorToString(), 0);
             } elseif ($Data->Data != '') {
@@ -272,7 +254,7 @@ class KLF200Configurator extends IPSModule
                 $this->SendDebug('NodeTypeSubType', $NodeTypeSubType, 0);
                 $this->SendDebug('SerialNumber', substr($APIData->Data, 76, 8), 1);
                 $this->SendDebug('BuildNumber', ord($APIData->Data[75]), 0);
-                $Nodes = $this->TempNodes; //$this->Nodes;
+                $Nodes = $this->TempNodes;
                 $Nodes[$APIData->NodeID] = [
                     'Name'            => $Name,
                     'NodeTypeSubType' => $NodeTypeSubType
@@ -282,9 +264,11 @@ class KLF200Configurator extends IPSModule
             case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_FINISHED_NTF:
                 $this->Nodes = $this->TempNodes;
                 $this->TempNodes = [];
+                $this->SendDebug('END Nodes', '', 0);
                 $Splitter = IPS_GetInstance($this->InstanceID)['ConnectionID'];
                 $NodeValues = $this->GetNodeConfigFormValues($Splitter);
-                $this->UpdateFormField('Config', 'values', json_encode($NodeValues));
+                $SceneValues = $this->GetSceneConfigFormValues($Splitter);
+                $this->UpdateFormField('Config', 'values', json_encode(array_merge($NodeValues, $SceneValues)));
                 $this->UpdateFormField('Config', 'visible', true);
                 $this->UpdateFormField('GatewayCommands', 'visible', true);
                 $this->UpdateFormField('ProgressLearn', 'visible', false);
@@ -292,7 +276,6 @@ class KLF200Configurator extends IPSModule
                 $this->UpdateFormField('RemoveNode', 'values', json_encode($DeleteNodeValues));
                 $this->UpdateFormField('RemoveNode', 'visible', true);
                 $this->UpdateFormField('ProgressRemove', 'visible', false);
-                //$this->GetNodeInfoIsRunning = false;
                 break;
             case \KLF200\APICommand::NODE_INFORMATION_CHANGED_NTF:
                 $Name = trim(substr($APIData->Data, 4, 64));
@@ -300,6 +283,29 @@ class KLF200Configurator extends IPSModule
                 $Nodes = $this->Nodes;
                 $Nodes[$APIData->NodeID]['Name'] = $Name;
                 $this->Nodes = $Nodes;
+                break;
+            case \KLF200\APICommand::GET_SCENE_LIST_NTF:
+                $NumberOfSceneObject = ord($APIData->Data[0]);
+                $this->SendDebug('NumberOfObject', $NumberOfSceneObject, 0);
+                $ObjectData = substr($APIData->Data, 1);
+                for ($index = 0; $index < $NumberOfSceneObject; $index++) {
+                    $SceneID = ord($ObjectData[0]);
+                    $SceneName = trim(substr($ObjectData, 1, 64));
+                    $TempScenes = $this->TempScenes;
+                    $TempScenes[$SceneID]['Name'] = $SceneName;
+                    $this->TempScenes = $TempScenes;
+                    $ObjectData = substr($ObjectData, 65);
+                }
+                $RemainingNumberOfObject = $ObjectData[0];
+                if ($RemainingNumberOfObject == 0) {
+                    $this->Scenes = $this->TempScenes;
+                    $this->TempScenes = [];
+                    $this->SendDebug('END Scenes', '', 0);
+                    $Splitter = IPS_GetInstance($this->InstanceID)['ConnectionID'];
+                    $NodeValues = $this->GetNodeConfigFormValues($Splitter);
+                    $SceneValues = $this->GetSceneConfigFormValues($Splitter);
+                    $this->UpdateFormField('Config', 'values', json_encode(array_merge($NodeValues, $SceneValues)));
+                }
                 break;
         }
     }
@@ -324,19 +330,6 @@ class KLF200Configurator extends IPSModule
     {
         $item1 = IPS_GetProperty($InstanceID, $ConfigParam);
     }
-
-    /*private function GetAllNodesInformation()
-    {
-        $this->Nodes = [];
-
-        $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_ALL_NODES_INFORMATION_REQ);
-        $ResultAPIData = $this->SendAPIData($APIData);
-        if ($ResultAPIData->isError()) {
-            return false;
-        }
-        $this->GetNodeInfoIsRunning = true;
-        return ord($ResultAPIData->Data[0]) == 1;
-    }*/
 
     /**
      * Interne Funktion des SDK.
@@ -377,16 +370,67 @@ class KLF200Configurator extends IPSModule
             $NodeValues[] = $AddValue;
         }
 
-        foreach ($InstanceIDListNodes as $InstanceIDNode => $Node) {
+        foreach ($InstanceIDListNodes as $InstanceIDNode => $NodeID) {
             $NodeValues[] = [
                 'instanceID' => $InstanceIDNode,
-                'nodeid'     => $Node,
+                'nodeid'     => $NodeID,
                 'name'       => IPS_GetName($InstanceIDNode),
                 'type'       => 'unknown',
                 'location'   => stristr(IPS_GetLocation($InstanceIDNode), IPS_GetName($InstanceIDNode), true)
             ];
         }
         return $NodeValues;
+    }
+
+    /**
+     * Interne Funktion des SDK.
+     */
+    private function GetSceneConfigFormValues(int $Splitter)
+    {
+        $FoundScenes = $this->Scenes;
+        $this->SendDebug('Found Scenes', $FoundScenes, 0);
+        $InstanceIDListScenes = $this->GetInstanceList(\KLF200\GUID::Scene, $Splitter, \KLF200\Scene\Property::SceneId);
+        $this->SendDebug('IPS Scenes', $InstanceIDListScenes, 0);
+        $SceneValues = [];
+        foreach ($FoundScenes as $SceneID => $Scene) {
+            $InstanceIDScene = array_search($Scene, $InstanceIDListScenes);
+            if ($InstanceIDScene !== false) {
+                $AddValue = [
+                    'instanceID'  => $InstanceIDScene,
+                    'sceneid'     => $SceneID,
+                    'name'        => IPS_GetName($InstanceIDScene),
+                    'type'        => $this->Translate('Scene'),
+                    'location'    => stristr(IPS_GetLocation($InstanceIDScene), IPS_GetName($InstanceIDScene), true)
+                ];
+                unset($InstanceIDListScenes[$InstanceIDScene]);
+            } else {
+                $AddValue = [
+                    'instanceID' => 0,
+                    'sceneid'    => $SceneID,
+                    'name'       => $Scene['Name'],
+                    'type'       => $this->Translate('Scene'),
+                    'location'   => ''
+                ];
+            }
+            $AddValue['create'] = [
+                'moduleID'      => \KLF200\GUID::Scene,
+                'configuration' => [\KLF200\Scene\Property::SceneId => $Scene],
+                'location'      => ['Velux KLF200']
+            ];
+
+            $SceneValues[] = $AddValue;
+        }
+
+        foreach ($InstanceIDListScenes as $InstanceIDScene => $SceneID) {
+            $SceneValues[] = [
+                'instanceID'  => $InstanceIDScene,
+                'sceneid'     => $SceneID,
+                'name'        => IPS_GetName($InstanceIDScene),
+                'type'        => $this->Translate('Scene'),
+                'location'    => stristr(IPS_GetLocation($InstanceIDScene), IPS_GetName($InstanceIDScene), true)
+            ];
+        }
+        return $SceneValues;
     }
 
     private function GetDeleteNodeConfigFormValues()

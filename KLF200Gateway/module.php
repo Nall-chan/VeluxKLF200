@@ -28,10 +28,10 @@ eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(_
  * @property string $Host
  * @property string $ReceiveBuffer
  * @property \KLF200\APIData $ReceiveAPIData
- * @property \KLF200\APIData[] $ReplyAPIData
- * @property array $Nodes
+ * @property \KLF200\APIData[][] $ReplyAPIData
  * @property int $WaitForNodes
  * @property bool $GetNodeInfoIsRunning
+ * @property bool $GetSceneInfoIsRunning
  */
 class KLF200Gateway extends IPSModule
 {
@@ -59,11 +59,10 @@ class KLF200Gateway extends IPSModule
         $this->RegisterTimer(\KLF200\Gateway\Timer::KeepAlive, 0, 'KLF200_ReadGatewayState($_IPS[\'TARGET\']);');
         $this->Host = '';
         $this->ParentID = 0;
-
         $this->ReceiveBuffer = '';
         $this->ReplyAPIData = [];
         $this->GetNodeInfoIsRunning = false;
-        $this->Nodes = [];
+        $this->GetSceneInfoIsRunning = false;
 
         if (IPS_GetKernelRunlevel() != KR_READY) {
             $this->RegisterMessage(0, IPS_KERNELSTARTED);
@@ -93,17 +92,27 @@ class KLF200Gateway extends IPSModule
         if ($this->IORequestAction($Ident, $Value)) {
             return true;
         }
-        if ($Ident == 'GetAllNodesInformation') {
-            if ($Value) {
-                if ($this->GetAllNodesInformation()) {
-                    while ($this->GetNodeInfoIsRunning) {
-                        IPS_Sleep(10);
+        switch ($Ident) {
+            case 'GetAllNodesInformation':
+                if ($Value) {
+                    if ($this->GetAllNodesInformation()) {
+                        while ($this->GetNodeInfoIsRunning) {
+                            IPS_Sleep(10);
+                        }
+                        return true;
                     }
-                    return true;
                 }
-            } else {
                 return $this->GetAllNodesInformation();
-            }
+            case 'GetAllSceneInformation':
+                if ($Value) {
+                    if ($this->GetAllSceneInformation()) {
+                        while ($this->GetSceneInfoIsRunning) {
+                            IPS_Sleep(10);
+                        }
+                        return true;
+                    }
+                }
+                return $this->GetAllSceneInformation();
         }
         return false;
     }
@@ -129,15 +138,13 @@ class KLF200Gateway extends IPSModule
     {
         $this->RegisterMessage($this->InstanceID, FM_CONNECT);
         $this->RegisterMessage($this->InstanceID, FM_DISCONNECT);
-
         parent::ApplyChanges();
         $this->RegisterVariableString('FirmwareVersion', $this->Translate('Firmware Version'), '', 0);
         $this->RegisterVariableInteger('HardwareVersion', $this->Translate('Hardware Version'), '', 0);
         $this->RegisterVariableString('ProtocolVersion', $this->Translate('Protocol Version'), '', 0);
-
         $this->ReceiveBuffer = '';
         $this->ReplyAPIData = [];
-        $this->Nodes = [];
+
         if (IPS_GetKernelRunlevel() == KR_READY) {
             $this->RegisterParent();
             if ($this->HasActiveParent()) {
@@ -150,9 +157,8 @@ class KLF200Gateway extends IPSModule
 
     public function ReadGatewayState()
     {
-        $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_STATE_REQ);
-        //$APIData = new \KLF200\APIData(\KLF200\APICommand::GET_SCENE_LIST_REQ);
-        $ResultAPIData = $this->SendAPIData($APIData);
+        //$APIData = new \KLF200\APIData(\KLF200\APICommand::GET_STATE_REQ);
+        //$ResultAPIData = $this->SendAPIData($APIData);
         //todo
         // brauchen wir state? Oder substate?
         /*
@@ -286,7 +292,6 @@ class KLF200Gateway extends IPSModule
     {
         $this->ReceiveBuffer = '';
         $this->ReplyAPIData = [];
-        $this->Nodes = [];
         $this->RegisterParent();
         if ($this->HasActiveParent()) {
             $this->IOChangeState(IS_ACTIVE);
@@ -327,6 +332,7 @@ class KLF200Gateway extends IPSModule
             }
         }
     }
+
     protected function RegisterParent()
     {
         $IOId = $this->IORegisterParent();
@@ -358,6 +364,7 @@ class KLF200Gateway extends IPSModule
                 $this->RequestGatewayVersion();
                 $this->SetHouseStatusMonitor();
                 $this->GetAllNodesInformation();
+                $this->GetAllSceneInformation();
             } else {
                 $this->SetTimerInterval(\KLF200\Gateway\Timer::KeepAlive, 0);
             }
@@ -385,10 +392,19 @@ class KLF200Gateway extends IPSModule
         }
     }
 
+    private function GetAllSceneInformation()
+    {
+        $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_SCENE_LIST_REQ);
+        $ResultAPIData = $this->SendAPIData($APIData);
+        if ($ResultAPIData->isError()) {
+            return false;
+        }
+        $this->GetSceneInfoIsRunning = true;
+        return ord($ResultAPIData->Data[0]) == 1;
+    }
+
     private function GetAllNodesInformation()
     {
-        $this->Nodes = [];
-
         $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_ALL_NODES_INFORMATION_REQ);
         $ResultAPIData = $this->SendAPIData($APIData);
         if ($ResultAPIData->isError()) {
@@ -397,14 +413,6 @@ class KLF200Gateway extends IPSModule
         $this->GetNodeInfoIsRunning = true;
         return ord($ResultAPIData->Data[0]) == 1;
     }
-
-    /*
-      public function GetSceneList()
-      {
-      $APIData = new \KLF200\APIData(\KLF200\APICommand::GET_SCENE_LIST_REQ);
-      $ResultAPIData = $this->SendAPIData($APIData);
-      }
-     */
 
     private function SetHouseStatusMonitor()
     {
@@ -432,6 +440,13 @@ class KLF200Gateway extends IPSModule
                 break;
             case \KLF200\APICommand::GET_ALL_NODES_INFORMATION_FINISHED_NTF:
                 $this->GetNodeInfoIsRunning = false;
+                break;
+            case \KLF200\APICommand::SCENE_INFORMATION_CHANGED_NTF:
+                sleep(3);
+                if (!$this->GetSceneInfoIsRunning) {
+                    IPS_RunScriptText('IPS_RequestAction(' . $this->InstanceID . ',"GetAllSceneInformation",false);');
+                }
+
                 break;
         }
         $this->SendAPIDataToChildren($APIData);
@@ -484,7 +499,6 @@ class KLF200Gateway extends IPSModule
     private function DecodeSLIPData($SLIPData)
     {
         $SLIPData = $this->ReceiveBuffer . $SLIPData;
-        //$this->SendDebug('Input SLIP Data', $SLIPData, 1);
         $Start = strpos($SLIPData, chr(0xc0));
         if ($Start === false) {
             $this->SendDebug('ERROR', 'SLIP Start Marker not found', 0);
@@ -522,6 +536,7 @@ class KLF200Gateway extends IPSModule
         $Command = unpack('n', substr($TransportData, 2, 2))[1];
         $Data = substr($TransportData, 4, $len - 5);
         $APIData = new \KLF200\APIData($Command, $Data);
+        $this->SendDebug('test', $APIData, 1);
         if ($APIData->isEvent()) {
             $this->SendDebug('Event', $APIData, 1);
             $this->ReceiveEvent($APIData);
@@ -532,28 +547,8 @@ class KLF200Gateway extends IPSModule
             $this->SendDebug('Tail hast Start Marker', '', 0);
             $this->DecodeSLIPData('');
         }
-    }
+    } // SendQueue wieder rauswerfen.... Wartezeit hochsetzen auf 7 Sekunden
 
-    /**
-     * Wartet auf eine Antwort einer Anfrage an den LMS.
-     *
-     * @param string $APICommand
-     * @return ?\KLF200\APIData
-     */
-    /*
-    private function ReadReplyAPIData()
-    {
-        for ($i = 0; $i < 2000; $i++) {
-            $Buffer = $this->ReplyAPIData;
-            if (!is_null($Buffer)) {
-                $this->ReplyAPIData = null;
-                return $Buffer;
-            }
-            usleep(1000);
-        }
-        return null;
-    }
-     */
     /**
      * SendAPIData
      *
@@ -564,9 +559,7 @@ class KLF200Gateway extends IPSModule
     private function SendAPIData(\KLF200\APIData $APIData, bool $SetState = true)
     {
         try {
-            $this->SendDebug('Wait to send', \KLF200\APICommand::ToString($APIData->Command), 0);
             $time = microtime(true);
-
             while (true) {
                 if ($this->lock('SendAPIData')) {
                     break;
@@ -585,10 +578,10 @@ class KLF200Gateway extends IPSModule
             $JSON['DataID'] = \KLF200\GUID::ToClientSocket;
             $JSON['Buffer'] = utf8_encode($Data);
             $JsonString = json_encode($JSON);
-            $this->SendQueueAdd($APIData->Command);
+            $this->SendQueueAdd($APIData->Command, $APIData->NodeID);
             parent::SendDataToParent($JsonString);
             $this->unlock('SendAPIData');
-            $ResponseAPIData = $this->SendQueueWaitForResponse($APIData->Command);
+            $ResponseAPIData = $this->SendQueueWaitForResponse($APIData->Command, $APIData->NodeID);
             if ($ResponseAPIData === null) {
                 throw new Exception($this->Translate('Timeout.'), E_USER_NOTICE);
             }
@@ -610,12 +603,12 @@ class KLF200Gateway extends IPSModule
     }
 
     //################# SendQueue
-    private function SendQueueAdd(int $APIDataCommand)
+    private function SendQueueAdd(int $APIDataCommand, int $NodeId)
     {
         $APIDataCommand++;
         $this->lock('ReplyAPIData');
         $ReplyAPIData = $this->ReplyAPIData;
-        $ReplyAPIData[$APIDataCommand] = null;
+        $ReplyAPIData[$APIDataCommand][$NodeId] = null;
         $this->ReplyAPIData = $ReplyAPIData;
         $this->unlock('ReplyAPIData');
     }
@@ -628,14 +621,17 @@ class KLF200Gateway extends IPSModule
             $this->unlock('ReplyAPIData');
             return false;
         }
-        $ReplyAPIData[$APIData->Command] = $APIData;
-
+        if (!array_key_exists($APIData->NodeID, $ReplyAPIData[$APIData->Command])) {
+            $this->unlock('ReplyAPIData');
+            return false;
+        }
+        $ReplyAPIData[$APIData->Command][$APIData->NodeID] = $APIData;
         $this->ReplyAPIData = $ReplyAPIData;
         $this->unlock('ReplyAPIData');
         return true;
     }
 
-    private function SendQueueWaitForResponse(int $APIDataCommand)
+    private function SendQueueWaitForResponse(int $APIDataCommand, int $NodeId)
     {
         $APIDataCommand++;
         for ($i = 0; $i < 1200; $i++) {
@@ -646,23 +642,29 @@ class KLF200Gateway extends IPSModule
                 $this->SendDebug('Error in SendQueueWait', \KLF200\APICommand::ToString($APIDataCommand), 0);
                 return null;
             }
-            if (is_a($ReplyAPIData[$APIDataCommand], '\\KLF200\\APIData')) {
-                $this->SendQueueRemove($APIDataCommand);
-                return $ReplyAPIData[$APIDataCommand];
+            if (!array_key_exists($NodeId, $ReplyAPIData[$APIDataCommand])) {
+                $this->SendDebug('Error in SendQueueWait', \KLF200\APICommand::ToString($APIDataCommand), 0);
+                return null;
+            }
+            if (is_a($ReplyAPIData[$APIDataCommand][$NodeId], '\\KLF200\\APIData')) {
+                $this->SendQueueRemove($APIDataCommand, $NodeId);
+                return $ReplyAPIData[$APIDataCommand][$NodeId];
             }
             IPS_Sleep(5);
         }
-        $this->SendQueueRemove($APIDataCommand);
+        $this->SendQueueRemove($APIDataCommand, $NodeId);
         return null;
     }
 
-    private function SendQueueRemove(int $APIDataCommand)
+    private function SendQueueRemove(int $APIDataCommand, $NodeID)
     {
         $this->lock('ReplyAPIData');
         $ReplyAPIData = $this->ReplyAPIData;
         if (array_key_exists($APIDataCommand, $ReplyAPIData)) {
-            unset($ReplyAPIData[$APIDataCommand]);
-            $this->ReplyAPIData = $ReplyAPIData;
+            if (array_key_exists($NodeID, $ReplyAPIData[$APIDataCommand])) {
+                unset($ReplyAPIData[$APIDataCommand][$NodeID]);
+                $this->ReplyAPIData = $ReplyAPIData;
+            }
         }
         $this->unlock('ReplyAPIData');
     }
