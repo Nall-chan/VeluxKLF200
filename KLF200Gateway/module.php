@@ -55,7 +55,7 @@ class KLF200Gateway extends IPSModule
         $this->RegisterPropertyString(\KLF200\Gateway\Property::Password, '');
         $this->RegisterPropertyBoolean(\KLF200\Gateway\Property::RebootOnShutdown, false);
         $this->RegisterAttributeBoolean(\KLF200\Gateway\Attribute::ClientSocketStateOnShutdown, false);
-        $this->RegisterTimer(\KLF200\Gateway\Timer::KeepAlive, 0, 'KLF200_ReadGatewayState($_IPS[\'TARGET\']);');
+        $this->RegisterTimer(\KLF200\Gateway\Timer::KeepAlive, 0, 'KLF200_RequestGatewayVersion($_IPS[\'TARGET\']);');
         $this->Host = '';
         $this->ParentID = 0;
         $this->ReceiveBuffer = '';
