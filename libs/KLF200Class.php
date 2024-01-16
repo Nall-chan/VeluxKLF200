@@ -169,6 +169,25 @@ namespace KLF200{
         }
     }
 
+    class Status
+    {
+        public const REQUEST_ACCEPTED = 0;
+        public const INVALID_PARAMETERS = 1;
+        public const REQUEST_REJECTED = 2;
+
+        public static function ToString(int $Status)
+        {
+            switch ($Status) {
+                case self::REQUEST_ACCEPTED:
+                    return 'Request accepted';
+                case self::INVALID_PARAMETERS:
+                    return 'Invalid Parameters';
+                case self::REQUEST_REJECTED:
+                    return 'Request rejected';
+            }
+        }
+    }
+
     class StatusID
     {
         public const STATUS_LOCAL_USER = 0x00;
@@ -1008,6 +1027,12 @@ namespace KLF200\Scene{
     class Attribute
     {
         public const SceneList = 'SceneList';
+    }
+
+    class Variables
+    {
+        public const Execute = 'Execute';
+        public const Velocity = 'Velocity';
     }
 }
 

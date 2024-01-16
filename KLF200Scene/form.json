@@ -4,11 +4,6 @@
             "name": "SceneId",
             "type": "NumberSpinner",
             "caption": "Scene ID"
-        },
-        {
-            "name": "AutoRename",
-            "type": "CheckBox",
-            "caption": "Rename the instance if the name changes in the KLF200"
         }
     ],
     "actions": [

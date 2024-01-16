@@ -902,14 +902,17 @@ class KLF200Node extends IPSModule
             if ($SessionId == -1) {
                 return $ResponseAPIData;
             }
-            $ResultStatus = (ord($ResponseAPIData->Data[0]) == 0);
-            if (!$ResultStatus) {
-                $this->SessionQueueRemove($SessionId);
-                trigger_error($this->Translate('Command is rejected'), E_USER_NOTICE);
-                return false;
+            $ResultStatus = ord($ResponseAPIData->Data[0]);
+            switch ($ResultStatus) {
+                case \KLF200\Status::INVALID_PARAMETERS:
+                case \KLF200\Status::REQUEST_REJECTED:
+                    $this->SessionQueueRemove($SessionId);
+                    trigger_error($this->Translate(\KLF200\State::ToString($ResultStatus)), E_USER_NOTICE);
+                    return false;
+                    break;
             }
             if (!$this->ReadPropertyBoolean(\KLF200\Node\Property::WaitForFinishSession)) {
-                return $ResultStatus;
+                return true;
             }
             $SessionStatus = $this->SessionQueueWaitForFinish($SessionId);
             if ($SessionStatus['RunStatus'] == \KLF200\RunStatus::EXECUTION_FAILED) {

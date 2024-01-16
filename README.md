@@ -20,6 +20,7 @@ ermöglicht die Einbindung von allen io-homecontrol® Geräten, welche von diese
   - [KLF200 Configurator](#klf200-configurator)
   - [KLF200 Gateway](#klf200-gateway)
   - [KLF200 Node](#klf200-node)
+  - [KLF200 Scene](#klf200-scene)
 - [2. Voraussetzungen](#2-voraussetzungen)
 - [3. Software-Installation](#3-software-installation)
 - [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
@@ -42,7 +43,10 @@ ermöglicht die Einbindung von allen io-homecontrol® Geräten, welche von diese
   
 ### [KLF200 Node](KLF200Node/README.md)  
   - Bildet ein Gerät (Node) des KLF200 in Symcon ab.  
-  
+
+### [KLF200 Scene](KLF200Scene/README.md)  
+  - Bildet eine Szene des KLF200 in Symcon ab.  
+  -   
 ## 2. Voraussetzungen
 
  - IPS 6.0 oder höher  
@@ -72,8 +76,13 @@ Es wird empfohlen die Einrichtung mit der Discovery-Instanz zu starten ([KLF200 
 | KLF200 Configurator | Configurator | KLF200 | {38724E6E-8202-4D37-9FA7-BDD2EDA79520} |
 | KLF200 Gateway      | Splitter     | KLF200 | {725D4DF6-C8FC-463C-823A-D3481A3D7003} |
 | KLF200 Node         | Device       | KLF200 | {4EBD07B1-2962-4531-AC5F-7944789A9CE5} |
+| KLF200 Scene        | Device       | KLF200 | {4E0650E4-2CDE-47A1-99F8-2C695FAC25E7} |
 
 ### 2. Changelog
+
+ Version 1.02:
+ - Timeout auf 10 Sekunden erhöht.  
+ - Neue Scenen-Instanz.  
 
  Version 1.00:
  - Doku aktualisiert.  

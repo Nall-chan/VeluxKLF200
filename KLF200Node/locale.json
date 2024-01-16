@@ -85,6 +85,8 @@
             "Closed": "Geschlossen",
             "Instance does not implement this function": "Instanz unterstützt diese Funktion nicht",
             "Invalid Ident": "Ungültiger Ident",
+            "Request accepted": "Anfrage angenommen",
+            "Invalid Parameters": "Ungültige Parameter",
             "Request rejected": "Anfrage abgelehnt",
             "Invalid node index": "Ungültiger Node-Eintrag",
             "Instance has no active parent.": "Instanz hat keinen aktiven Parent.",

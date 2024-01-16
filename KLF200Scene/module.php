@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 require_once __DIR__ . '/../libs/KLF200Class.php';  // diverse Klassen
-eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/BufferHelper.php') . '}');
-eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/SemaphoreHelper.php') . '}');
-eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/DebugHelper.php') . '}');
-eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/VariableHelper.php') . '}');
-eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DIR__ . '/../libs/helper/VariableProfileHelper.php') . '}');
+eval('declare(strict_types=1);namespace KLF200Scene {?>' . file_get_contents(__DIR__ . '/../libs/helper/BufferHelper.php') . '}');
+eval('declare(strict_types=1);namespace KLF200Scene {?>' . file_get_contents(__DIR__ . '/../libs/helper/SemaphoreHelper.php') . '}');
+eval('declare(strict_types=1);namespace KLF200Scene {?>' . file_get_contents(__DIR__ . '/../libs/helper/DebugHelper.php') . '}');
+eval('declare(strict_types=1);namespace KLF200Scene {?>' . file_get_contents(__DIR__ . '/../libs/helper/VariableHelper.php') . '}');
+eval('declare(strict_types=1);namespace KLF200Scene {?>' . file_get_contents(__DIR__ . '/../libs/helper/VariableProfileHelper.php') . '}');
 
 /**
  * KLF200Scene Klasse implementiert eine Scene
@@ -31,12 +31,12 @@ eval('declare(strict_types=1);namespace KLF200Node {?>' . file_get_contents(__DI
  */
 class KLF200Scene extends IPSModule
 {
-    use \KLF200Node\Semaphore,
-        \KLF200Node\BufferHelper,
-        \KLF200Node\VariableHelper,
-        \KLF200Node\VariableProfileHelper,
-        \KLF200Node\DebugHelper {
-            \KLF200Node\DebugHelper::SendDebug as SendDebugTrait;
+    use \KLF200Scene\Semaphore,
+        \KLF200Scene\BufferHelper,
+        \KLF200Scene\VariableHelper,
+        \KLF200Scene\VariableProfileHelper,
+        \KLF200Scene\DebugHelper {
+            \KLF200Scene\DebugHelper::SendDebug as SendDebugTrait;
         }
 
     /**
@@ -46,7 +46,7 @@ class KLF200Scene extends IPSModule
     {
         parent::Create();
         $this->ConnectParent(\KLF200\GUID::Gateway);
-        $this->RegisterPropertyBoolean(\KLF200\Scene\Property::SceneId, false);
+        $this->RegisterPropertyInteger(\KLF200\Scene\Property::SceneId, 0);
         $this->RegisterPropertyBoolean(\KLF200\Scene\Property::AutoRename, false);
         $this->SessionId = 1;
         $this->SessionRunStatus = [];
@@ -98,18 +98,22 @@ class KLF200Scene extends IPSModule
                 [2, 'Fast', '', -1]
             ]
         );
-        $this->RegisterVariableInteger('Execute', $this->Translate('Scene'), 'KLF200.Scene', 0);
-        $this->EnableAction('Execute');
+        $this->RegisterVariableInteger(\KLF200\Scene\Variables::Execute, $this->Translate('Scene'), 'KLF200.Scene', 0);
+        $this->EnableAction(\KLF200\Scene\Variables::Execute);
 
-        $this->RegisterVariableInteger('Velocity', $this->Translate('Velocity'), 'KLF200.Velocity', 0);
-        $this->EnableAction('Velocity');
+        $this->RegisterVariableInteger(\KLF200\Scene\Variables::Velocity, $this->Translate('Velocity'), 'KLF200.Velocity', 0);
+        $this->EnableAction(\KLF200\Scene\Variables::Velocity);
     }
 
     public function RequestAction($Ident, $Value)
     {
-        if ($Ident == 'Execute') {
-            $this->StartScene((int) $this->GetValue('Velocity'));
-            return;
+        switch ($Ident) {
+            case \KLF200\Scene\Variables::Execute:
+                $this->StartScene((int) $this->GetValue('Velocity'));
+                return;
+            case \KLF200\Scene\Variables::Velocity:
+                $this->SetValue($Ident, $Value);
+                return;
         }
         echo $this->Translate('Invalid Ident');
         return;
@@ -125,7 +129,7 @@ class KLF200Scene extends IPSModule
         $Data .= $this->SceneId;    // Data 5
         $Data .= chr($Velocity);    // Data 6
         $APIData = new \KLF200\APIData(\KLF200\APICommand::ACTIVATE_SCENE_REQ, $Data);
-        $ResultAPIData = $this->SendAPIData($APIData);
+        return $this->SendAPIData($APIData, $SessionID);
     }
 
     public function ReceiveData($JSONString)
@@ -191,11 +195,15 @@ class KLF200Scene extends IPSModule
             if ($SessionId == -1) {
                 return $ResponseAPIData;
             }
-            $ResultStatus = (ord($ResponseAPIData->Data[0]) == 0);
-            if (!$ResultStatus) {
-                trigger_error($this->Translate('Command is rejected'), E_USER_NOTICE);
+            $ResultStatus = ord($ResponseAPIData->Data[0]);
+            switch ($ResultStatus) {
+                case \KLF200\Status::INVALID_PARAMETERS:
+                case \KLF200\Status::REQUEST_REJECTED:
+                    trigger_error($this->Translate(\KLF200\Status::ToString($ResultStatus)), E_USER_NOTICE);
+                    return false;
+                    break;
             }
-            return $ResultStatus;
+            return true;
         } catch (Exception $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);
             return null;

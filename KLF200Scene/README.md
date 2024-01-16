@@ -6,7 +6,7 @@
 [![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#2-spenden)
 [![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#2-spenden)  
 
-# Velux KLF200 Node  <!-- omit in toc -->
+# Velux KLF200 Scene  <!-- omit in toc -->
 
 ## Inhaltsverzeichnis <!-- omit in toc -->
 
@@ -18,9 +18,6 @@
 - [6. WebFront](#6-webfront)
 - [7. PHP-Befehlsreferenz](#7-php-befehlsreferenz)
   - [Allgemein](#allgemein)
-  - [Shutter](#shutter)
-  - [Slats](#slats)
-  - [Dimmer Light / Heating](#dimmer-light--heating)
 - [8. Aktionen](#8-aktionen)
 - [9. Anhang](#9-anhang)
   - [1. Changelog](#1-changelog)
@@ -29,8 +26,7 @@
 
 ## 1. Funktionsumfang
 
-  - Auslesen, darstellen und Steuern von Zuständen eines Gerätes.  
-  - Bereitstellung von PHP-Funktionen.  
+  - Starten einer Scene.  
 
 ## 2. Voraussetzungen
 
@@ -51,84 +47,31 @@ Bei der manuellen Einrichtung ist das Modul im Dialog `Instanz hinzufügen` unte
 ![Instanz hinzufügen](../imgs/instanzen.png)  
 
 In dem sich öffnenden Konfigurationsformular ist die `Node ID` des Gerätes einzutragen.  
-![Konfiguration](../imgs/conf_node.png)  
+![Konfiguration](../imgs/conf_scene.png)  
 
 **Konfigurationsseite (Parameter)**  
 
-| Name                 | Text                                                    |
-| -------------------- | ------------------------------------------------------- |
-| NodeId               | Node ID                                                 |
-| WaitForFinishSession | Auf Zustand vom Gerät warten (*)                        |
-| AutoRename           | Instanz umbenennen, wenn sich der Name in KLF200 ändert |
-
-**(*) Wichtig:**  
-Wird diese Option aktiviert, so wartet die Instanz bei einer Ansteuerung eines Gerätes maximal 60 Sekunden auf die Beendigung der Aktion!  
-Solange die Aktion noch läuft und das Gerät nicht 'fertig' (oder Fehler) gemeldet hat, wird im WebFront die Aktion auch als laufend Angezeigt bzw. wird ein PHP-Skript welches eine Aktion mit `KLF200_SetMainParameter` gestartet hat, blockiert.  
-Der Vorteil ist jedoch, sollte ein Gerät seine Aktion nicht abschließen können, so wird die Fehlermeldung unmittelbar im WebFront bzw. PHP-Skript ausgegeben.  
-
-Ist diese Option inaktiv, so wird nur das Zustellen des Befehls an das KLF200 und die empfangene Quittung ausgewertet. Sollte dann beim ausführen der Aktion das Gerät einen Fehler melden, so ist dies nur im Logfile bzw. Meldungslog zu finden.  
-
+| Name    | Text      |
+| ------- | --------- |
+| SceneId | Szenen ID |
 
 ## 5. Statusvariablen und Profile
 
-Die Statusvariablen werden je nach Geräte-Typ des Nodes angelegt oder auch wieder entfernt.  
-Es werden folgende Statusvariablen verwendet: 'MAIN', 'FP1', 'FP2' und 'FP3'.  
-Dabei entsprechen die Werte und Aktionen dem jeweiligen Funktions-Parameter, welche bei jedem Geräte-Typ (NodeSubType) unterschiedlich sind.  
-Entsprechend sind auch der Name und das Profil beim anlegen der Instanz je nach Geräte-Typ unterschiedlich.  
+Folgende Statusvariablen werden erstellt:
 
-**Statusvariablen allgemein:**  
+**Statusvariablen:**  
 
-| Name               | Typ     | Ident          | Beschreibung                              |
-| :----------------- | :------ | :------------- | :---------------------------------------- |
-| letzte Aktivierung | integer | LastActivation | Quelle der letzte Ansteuerung des Gerätes |
-| zuletzt gesehen    | integer | LastSeen       | UnixTimestamp der letzten Meldung         |
-| letzter Fehler     | string  | ErrorState     | Letzter Fehlerstatus                      |
-| Laufstatus         | boolean | RunStatus      | Arbeitet der Node gerade                  |
-
-**Statusvariable MAIN:**  
-
-| Name            | Typ     | Ident | Beschreibung                                              |
-| :-------------- | :------ | :---- | :-------------------------------------------------------- |
-| Status          | boolean | MAIN  | Licht                                                     |
-| Schalter        | boolean | MAIN  | Aktoren                                                   |
-| Schloss         | boolean | MAIN  | Schlösser                                                 |
-| Position        | integer | MAIN  | Alle Geräte welche eine prozentuale Position unterstützen |
-| Intensität      | integer | MAIN  | Dimmbares Licht                                           |
-| Doppelrollladen | integer | MAIN  | Nur bei Doppelrollladen vorhanden                         |
-| Geschlossen     | integer | MAIN  | prozentuale Schließung von Lüftungen/Heizungen            |
-
-**Statusvariable FP1:**  
-
-| Name           | Typ     | Ident | Beschreibung                        |
-| :------------- | :------ | :---- | :---------------------------------- |
-| Orientierung   | integer | FP1   | Ausrichtung von Lamellen in Prozent |
-| Obere Position | integer | FP1   | Obere Position in Prozent           |
-
-**Statusvariable FP2:**  
-
-| Name            | Typ     | Ident | Beschreibung               |
-| :-------------- | :------ | :---- | :------------------------- |
-| Untere Position | integer | FP2   | Untere Position in Prozent |
-
-**Statusvariable FP3:**  
-
-| Name         | Typ     | Ident | Beschreibung                        |
-| :----------- | :------ | :---- | :---------------------------------- |
-| Orientierung | integer | FP3   | Ausrichtung von Lamellen in Prozent |
+| Name            | Typ     | Ident    | Beschreibung                                         |
+| :-------------- | :------ | :------- | :--------------------------------------------------- |
+| Szene           | integer | Execute  | Startet die Szene                                    |
+| Geschwindigkeit | integer | Velocity | Geschwindigkeit mit welcher die Szene gestartet wird |
 
 **Profile**:
  
-| Name                        | Typ     | verwendet von Statusvariablen  (Ident) |
-| :-------------------------- | :------ | :------------------------------------- |
-| KLF200.RunStatus            | boolean | RunStatus                              |
-| KLF200.StatusOwner          | integer | LastActivation                         |
-| KLF200.Blind                | integer | MAIN                                   |
-| KLF200.RollerShutter        | integer | MAIN, FP1, FP2                         |
-| KLF200.Window               | integer | MAIN                                   |
-| KLF200.Garage               | integer | MAIN                                   |
-| KLF200.Light.51200.Reversed | integer | MAIN                                   |
-| KLF200.Intensity.51200      | integer | MAIN                                   |
-| KLF200.Slats                | integer | FP1, FP3                               |
+| Name            | Typ     | verwendet von Statusvariablen  (Ident) |
+| :-------------- | :------ | :------------------------------------- |
+| KLF200.Scene    | integer | Execute                                |
+| KLF200.Velocity | integer | Velocity                               |
 
                                                                                                                                                                
 ## 6. WebFront
@@ -142,123 +85,14 @@ Alle Funktionen liefern `TRUE` wenn das Gateway den Empfang des Befehls bestäti
 Anschließend führt das KLF200 die gewünschte Aktion aus.  
 Im Fehlerfall, oder wenn das Gateway den Befehl ablehnt, wird eine Warnung erzeugt und `FALSE` zurückgegeben.  
 
-Alle `$Value` Variablen vom Typ integer (int) haben eine Wertebereich von 0 (`0x000`) bis 51200 (`0xC800`) für absolute Werte.  
-
-Es kann bei allen `$Value` Variablen vom Typ integer (int) auch eine Relative Ansteuerung erfolgen.
-Hierzu ist der Wertebereich von 51456 (`0xC900`) für -100% bis zu 53456 (`0xD0D0`) für +100% reserviert.  
-
 ---  
 
 ### Allgemein
 
 ```php
-bool KLF200_RequestStatus(int $InstanzeID)
+bool KLF200_StartScene(int $InstanzeID, int $Velocity)
 ```
-Stellt eine Anfrage über den aktuellen Status des Node an das Gateway.  
-
-```php
-bool KLF200_RequestNodeInformation(int $InstanzeID)
-```
-Stellt eine Anfrage über Informationen zum Node an das Gateway.  
-
-```php
-bool KLF200_SetMainParameter(int $InstanzeID, int $Value)
-```
-Main Parameter auf `$Value` setzen.  
-
-```php
-bool KLF200_SetFunctionParameter1(int $InstanzeID, int $Value)
-```
-Function Parameter 1 auf `$Value` setzen.  
-
-```php
-bool KLF200_SetFunctionParameter2(int $InstanzeID, int $Value)
-```
-Function Parameter 2 auf `$Value` setzen.  
-
-```php
-bool KLF200_SetFunctionParameter3(int $InstanzeID, int $Value)
-```
-Function Parameter 3 auf `$Value` setzen.  
-
-```php
-bool KLF200_SwitchMode(int $InstanzeID, bool $Value)
-```
-Gerät wird auf den in `$Value` übergebenen Wert ein/ausgeschaltet bzw. komplett geschlossen/geöffnet.  
-
----  
-
-### Shutter
-
-Betrifft alle Gerätetypen, welche eine prozentuale Ansteuerung für Positionen bieten.  
-
-```php
-bool KLF200_ShutterMove(int $InstanzeID, int $Value)
-```
-Gerät auf in den `$Value` übergebenen Wert setzen.  
-
-```php
-bool KLF200_ShutterMoveUp(int $InstanzeID)
-```
-Öffnungsbefehl an das Gerät senden.  
-
-```php
-bool KLF200_ShutterMoveDown(int $InstanzeID)
-```
-Schließbefehl an das Gerät senden.  
-
-```php
-bool KLF200_ShutterMoveStop(int $InstanzeID)
-```
-Stop Befehl an das Gerät senden.  
-
----  
-
-### Slats
-
-```php
-bool KLF200_OrientationSet(int $InstanzeID, int $Value)
-```
-Öffnungswinkel auf den in `$Value` übergebenen Wert setzen.  
-
-```php
-bool KLF200_OrientationUp(int $InstanzeID)
-```
-Öffnungswinkel auf 0 setzen.  
-
-```php
-bool KLF200_OrientationDown(int $InstanzeID)
-```
-Öffnungswinkel auf maximum setzen.  
-
-```php
-bool KLF200_OrientationStop(int $InstanzeID)
-```
-Stop Befehl an das Gerät senden.  
-
----  
-
-### Dimmer Light / Heating
-
-```php
-bool KLF200_DimSet(int $InstanzeID, int $Value)
-```
-Setzten den Dimmwert auf den in `$Value` übergebenen Wert.  
-
-```php
-bool KLF200_DimUp(int $InstanzeID)
-```
-Setzten den Dimmwert auf das Maximum.  
-
-```php
-bool KLF200_DimDown(int $InstanzeID)
-```
-Setzten den Dimmwert auf das Minimum.  
-
-```php
-bool KLF200_DimStop(int $InstanzeID)
-```
-Stop Befehl an das Gerät senden.  
+Startet eine Szene mit der Geschwindigkeit 0 bis 2;
 
 ## 8. Aktionen
 

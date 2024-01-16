@@ -1,0 +1,7 @@
+diff a/KLF200Gateway/module.php b/KLF200Gateway/module.php	(rejected hunks)
+@@ -30,4 +30,5 @@
+  * @property \KLF200\APIData $ReceiveAPIData
++ * @property \KLF200\APIData[][] $ReplyAPIData
+  * @property int $WaitForNodes
+  * @property bool $GetNodeInfoIsRunning
+  * @property bool $GetSceneInfoIsRunning
