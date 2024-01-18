@@ -147,7 +147,6 @@ class KLF200Configurator extends IPSModule
         return true;
     }
 
-    //todo scenes
     public function GetConfigurationForm()
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
@@ -164,6 +163,8 @@ class KLF200Configurator extends IPSModule
                 $Form['actions'][2]['popup']['items'][0]['caption'] = 'Splitter has no IO instance.';
             } else {
                 $NodeValues = $this->GetNodeConfigFormValues($Splitter);
+                $SceneValues = $this->GetSceneConfigFormValues($Splitter);
+                $NodeValues = array_merge($NodeValues, $SceneValues);
             }
         }
         $Form['actions'][1]['values'] = $NodeValues;

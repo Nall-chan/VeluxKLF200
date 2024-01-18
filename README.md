@@ -80,6 +80,10 @@ Es wird empfohlen die Einrichtung mit der Discovery-Instanz zu starten ([KLF200 
 
 ### 2. Changelog
 
+ Version 1.03:
+ - Node-Instanz hat die Rückmeldung von COMMAND_SEND_CFM und STATUS_REQUEST_CFM falsch ausgewertet.  
+ - Neue Scenen-Instanzen werden im Konfigurator angezeigt.  
+
  Version 1.02:
  - Timeout auf 10 Sekunden erhöht.  
  - Neue Scenen-Instanz.  

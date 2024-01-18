@@ -408,7 +408,7 @@ class KLF200Gateway extends IPSModule
         if ($ResultAPIData->isError()) {
             return false;
         }
-        return ord($ResultAPIData->Data[0]) == 1;
+        return ord($ResultAPIData->Data[0]) == \KLF200\Status::REQUEST_ACCEPTED;
     }
 
     private function SetHouseStatusMonitor()
@@ -476,7 +476,7 @@ class KLF200Gateway extends IPSModule
             trigger_error($this->Translate($ResultAPIData->ErrorToString()), E_USER_NOTICE);
             return false;
         }
-        if ($ResultAPIData->Data != "\x00") {
+        if (ord($ResultAPIData->Data[0]) != \KLF200\Status::REQUEST_ACCEPTED) {
             $this->SendDebug('Login Error', '', 0);
             $this->SetStatus(IS_EBASE + 1);
             $this->LogMessage('Access denied', KL_ERROR);

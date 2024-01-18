@@ -88,7 +88,7 @@
             "Request accepted": "Anfrage angenommen",
             "Invalid Parameters": "Ungültige Parameter",
             "Request rejected": "Anfrage abgelehnt",
-            "Invalid node index": "Ungültiger Node-Eintrag",
+            "Invalid system table index": "Ungültiger Systemtabellenindex",
             "Instance has no active parent.": "Instanz hat keinen aktiven Parent.",
             "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
         }

@@ -259,17 +259,12 @@ class KLF200Node extends IPSModule
         if ($ResultAPIData === null) {
             return false;
         }
-        $State = ord($ResultAPIData->Data[0]);
-        switch ($State) {
-            case 0:
-                return true;
-            case 1:
-                trigger_error($this->Translate('Request rejected'), E_USER_NOTICE);
-                return false;
-            case 2:
-                trigger_error($this->Translate('Invalid node index'), E_USER_NOTICE);
-                return false;
+        $ResultStatus = ord($ResultAPIData->Data[0]);
+        if ($ResultStatus == \KLF200\Status::REQUEST_ACCEPTED) {
+            return true;
         }
+        trigger_error($this->Translate(\KLF200\Status::ToString($ResultStatus * 2)), E_USER_NOTICE);
+        return false;
     }
 
     public function RequestStatus()
@@ -902,14 +897,11 @@ class KLF200Node extends IPSModule
             if ($SessionId == -1) {
                 return $ResponseAPIData;
             }
-            $ResultStatus = ord($ResponseAPIData->Data[0]);
-            switch ($ResultStatus) {
-                case \KLF200\Status::INVALID_PARAMETERS:
-                case \KLF200\Status::REQUEST_REJECTED:
-                    $this->SessionQueueRemove($SessionId);
-                    trigger_error($this->Translate(\KLF200\State::ToString($ResultStatus)), E_USER_NOTICE);
-                    return false;
-                    break;
+            $ResultStatus = ord($ResponseAPIData->Data[2]); //CommandStatus
+            if ($ResultStatus == \KLF200\CommandStatus::COMMAND_REJECTED) {
+                $this->SessionQueueRemove($SessionId);
+                trigger_error($this->Translate(\KLF200\Status::ToString($ResultStatus)), E_USER_NOTICE);
+                return false;
             }
             if (!$this->ReadPropertyBoolean(\KLF200\Node\Property::WaitForFinishSession)) {
                 return true;
@@ -926,6 +918,7 @@ class KLF200Node extends IPSModule
             return null;
         }
     }
+
     //################# SessionQueue
     private function SessionQueueAdd(int $SessionId)
     {

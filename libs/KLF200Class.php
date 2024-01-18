@@ -169,11 +169,27 @@ namespace KLF200{
         }
     }
 
+    class CommandStatus
+    {
+        public const COMMAND_REJECTED = 0;
+        public const COMMAND_ACCEPTED = 1;
+
+        public static function ToString(int $Status)
+        {
+            switch ($Status) {
+                case self::COMMAND_REJECTED:
+                    return 'Command is rejected';
+                case self::COMMAND_ACCEPTED:
+                    return 'Command is accepted';
+            }
+        }
+    }
     class Status
     {
         public const REQUEST_ACCEPTED = 0;
         public const INVALID_PARAMETERS = 1;
         public const REQUEST_REJECTED = 2;
+        public const INVALID_SYSTEM_TABLE_INDEX = 4; // factor 2
 
         public static function ToString(int $Status)
         {
@@ -181,9 +197,11 @@ namespace KLF200{
                 case self::REQUEST_ACCEPTED:
                     return 'Request accepted';
                 case self::INVALID_PARAMETERS:
-                    return 'Invalid Parameters';
+                    return 'Invalid parameters';
                 case self::REQUEST_REJECTED:
                     return 'Request rejected';
+                case self::INVALID_SYSTEM_TABLE_INDEX:
+                    return 'Invalid system table index';
             }
         }
     }

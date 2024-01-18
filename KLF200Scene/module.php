@@ -195,13 +195,9 @@ class KLF200Scene extends IPSModule
             if ($SessionId == -1) {
                 return $ResponseAPIData;
             }
-            $ResultStatus = ord($ResponseAPIData->Data[0]);
-            switch ($ResultStatus) {
-                case \KLF200\Status::INVALID_PARAMETERS:
-                case \KLF200\Status::REQUEST_REJECTED:
-                    trigger_error($this->Translate(\KLF200\Status::ToString($ResultStatus)), E_USER_NOTICE);
-                    return false;
-                    break;
+            $ResultStatus = ord($ResponseAPIData->Data[0]); //Status
+            if ($ResultStatus != \KLF200\Status::REQUEST_ACCEPTED) {
+                trigger_error($this->Translate(\KLF200\Status::ToString($ResultStatus)), E_USER_NOTICE);
             }
             return true;
         } catch (Exception $exc) {
