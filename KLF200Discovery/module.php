@@ -11,7 +11,7 @@ eval('declare(strict_types=1);namespace KLF200Discovery {?>' . file_get_contents
  *
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2024 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       1.00
  *

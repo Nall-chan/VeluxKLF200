@@ -14,7 +14,7 @@ eval('declare(strict_types=1);namespace KLF200Scene {?>' . file_get_contents(__D
  *
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2024 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       1.00
  *
@@ -185,8 +185,12 @@ class KLF200Scene extends IPSModule
                 throw new Exception($this->Translate('Instance has no active parent.'), E_USER_NOTICE);
             }
             /** @var \KLF200\APIData $ResponseAPIData */
-            $ret = @$this->SendDataToParent($APIData->ToJSON(\KLF200\GUID::ToGateway));
-            $ResponseAPIData = @unserialize($ret);
+            $ret = $this->SendDataToParent($APIData->ToJSON(\KLF200\GUID::ToGateway));
+            $ResponseAPIData = is_string($ret) ? @unserialize($ret, ['allowed_classes' => [\KLF200\APIData::class]]) : false;
+            if (!($ResponseAPIData instanceof \KLF200\APIData)) {
+                // Keine gültige Antwort vom Gateway (z.B. Fehler im Gateway, Rückgabewert von Symcon verworfen)
+                $ResponseAPIData = new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT));
+            }
             $this->SendDebug('Response', $ResponseAPIData, 1);
             if ($ResponseAPIData->isError()) {
                 trigger_error($this->Translate($ResponseAPIData->ErrorToString()), E_USER_NOTICE);

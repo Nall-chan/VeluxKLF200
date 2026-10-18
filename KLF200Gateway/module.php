@@ -15,7 +15,7 @@ eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(_
  *
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2024 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
  * @version       1.00
  *
@@ -27,7 +27,7 @@ eval('declare(strict_types=1);namespace KLF200Gateway {?>' . file_get_contents(_
  * @property int $ParentID
  * @property string $Host
  * @property string $ReceiveBuffer
- * @property \KLF200\APIData $ReplyAPIData
+ * @property ?\KLF200\APIData $ReplyAPIData
  * @property int $WaitForNodes
  * @property bool $GetNodeInfoIsRunning
  * @property bool $GetSceneInfoIsRunning
@@ -60,7 +60,6 @@ class KLF200Gateway extends IPSModule
         $this->ParentID = 0;
         $this->ReceiveBuffer = '';
         $this->ReplyAPIData = null;
-        $this->ReplyAPIData = [];
         $this->GetNodeInfoIsRunning = false;
         $this->GetSceneInfoIsRunning = false;
 
@@ -245,7 +244,9 @@ class KLF200Gateway extends IPSModule
             return serialize(new \KLF200\APIData(\KLF200\APICommand::ERROR_NTF, chr(\KLF200\ErrorNTF::TIMEOUT)));
         }
         $APIData = new \KLF200\APIData($JSONString);
-        $result = @$this->SendAPIData($APIData);
+        // Fehler nicht hier melden: Symcon verwirft sonst den Rückgabewert und das Child erhält kein APIData-Objekt.
+        // Das Child wertet die serialisierte Fehlerantwort selbst aus.
+        $result = $this->SendAPIData($APIData, true, false);
         return serialize($result);
     }
 
@@ -260,7 +261,7 @@ class KLF200Gateway extends IPSModule
     public function ReceiveData($JSONString)
     {
         $data = json_decode($JSONString);
-        $this->DecodeSLIPData(utf8_decode($data->Buffer));
+        $this->DecodeSLIPData(mb_convert_encoding($data->Buffer, 'ISO-8859-1', 'UTF-8'));
     }
 
     public function RebootGateway()
@@ -531,9 +532,15 @@ class KLF200Gateway extends IPSModule
             $this->SendDebug('ERROR', 'Wrong frame length', 0);
             return false;
         }
-        $Checksum = substr($TransportData, -1);
-        $ChecksumData = substr($TransportData, 0, -1);
-        //todo Checksum
+        // Prüfsumme: XOR über ProtocolID, Länge, Command und Daten (gleiche Berechnung wie APIData::GetSLIPData)
+        $Checksum = 0;
+        for ($i = 0; $i < $len - 1; $i++) {
+            $Checksum ^= ord($TransportData[$i]);
+        }
+        if ($Checksum != ord($TransportData[$len - 1])) {
+            $this->SendDebug('ERROR', 'Wrong checksum', 0);
+            return false;
+        }
         $Command = unpack('n', substr($TransportData, 2, 2))[1];
         $Data = substr($TransportData, 4, $len - 5);
         $APIData = new \KLF200\APIData($Command, $Data);
@@ -573,9 +580,10 @@ class KLF200Gateway extends IPSModule
      *
      * @param  \KLF200\APIData $APIData
      * @param  bool $SetState
+     * @param  bool $TriggerError Fehler per trigger_error melden (false bei Anfragen von Child-Instanzen)
      * @return \KLF200\APIData
      */
-    private function SendAPIData(\KLF200\APIData $APIData, bool $SetState = true)
+    private function SendAPIData(\KLF200\APIData $APIData, bool $SetState = true, bool $TriggerError = true)
     {
         try {
             $this->SendDebug('Wait to send', $APIData, 1);
@@ -595,7 +603,7 @@ class KLF200Gateway extends IPSModule
             $Data = $APIData->GetSLIPData();
             $this->SendDebug('Send', $APIData, 1);
             $JSON['DataID'] = \KLF200\GUID::ToClientSocket;
-            $JSON['Buffer'] = utf8_encode($Data);
+            $JSON['Buffer'] = mb_convert_encoding($Data, 'UTF-8', 'ISO-8859-1');
             $JsonString = json_encode($JSON);
             $this->ReplyAPIData = null;
             parent::SendDataToParent($JsonString);
@@ -606,13 +614,15 @@ class KLF200Gateway extends IPSModule
             }
             $this->SendDebug('Response', $ResponseAPIData, 1);
             $this->SendDebug('Duration', (int) ((microtime(true) - $time) * 1000) . ' msec', 0);
-            if ($ResponseAPIData->isError()) {
+            if ($TriggerError && $ResponseAPIData->isError()) {
                 trigger_error($this->Translate($ResponseAPIData->ErrorToString()), E_USER_NOTICE);
             }
             return $ResponseAPIData;
         } catch (Exception $exc) {
             $this->SendDebug('Error', $exc->getMessage(), 0);
-            trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
+            if ($TriggerError) {
+                trigger_error($this->Translate($exc->getMessage()), E_USER_NOTICE);
+            }
             if ($SetState) {
                 $this->SetStatus(IS_EBASE + 3);
             }

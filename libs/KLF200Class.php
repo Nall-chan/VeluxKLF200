@@ -44,7 +44,7 @@ namespace KLF200{
                 $Data = json_decode($Command, true);
                 $this->Command = $Data['Command'];
                 $this->NodeID = $Data['NodeID'];
-                $this->Data = utf8_decode($Data['Data']);
+                $this->Data = mb_convert_encoding($Data['Data'], 'ISO-8859-1', 'UTF-8');
                 return;
             }
             $this->Command = $Command;
@@ -62,7 +62,7 @@ namespace KLF200{
             $Data['DataID'] = $GUID;
             $Data['Command'] = $this->Command;
             $Data['NodeID'] = $this->NodeID;
-            $Data['Data'] = utf8_encode($this->Data);
+            $Data['Data'] = mb_convert_encoding($this->Data, 'UTF-8', 'ISO-8859-1');
             return json_encode($Data);
         }
 

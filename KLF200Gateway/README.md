@@ -1,10 +1,10 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg?style=flat-square)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-1.00-blue.svg?style=flat-square)](https://community.symcon.de/t/modul-velux-klf200/50429)
-[![Version](https://img.shields.io/badge/Symcon%20Version-6.0%20%3E-green.svg?style=flat-square)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v55-v60-q3-2021/)  
-[![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg?style=flat-square)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Check Style](https://github.com/Nall-chan/VeluxKLF200/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions) [![Run Tests](https://github.com/Nall-chan/VeluxKLF200/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions)  
-[![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#2-spenden)
-[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#2-spenden)  
+[![Module Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FVeluxKLF200%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.version&label=Modul%20Version&color=blue)](https://community.symcon.de/t/modul-velux-klf200/50429)
+[![Symcon Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FVeluxKLF200%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.compatibility.version&suffix=%3E&label=Symcon%20Version&color=green)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v55-v60-q3-2021/)  
+[![License](https://img.shields.io/badge/License-Custom--NC--SA-green.svg)](#6-lizenz)
+[![Check Style](https://github.com/Nall-chan/VeluxKLF200/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions)
+[![Run Tests](https://github.com/Nall-chan/VeluxKLF200/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/VeluxKLF200/actions)  
+[![PayPal.Me](https://img.shields.io/badge/PayPal-Me-lightblue.svg)](#2-spenden) [![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#2-spenden)  
 
 # Velux KLF200 Gateway  <!-- omit in toc -->
 
@@ -23,22 +23,21 @@
   - [2. Spenden](#2-spenden)
 - [10. Lizenz](#10-lizenz)
 
-
 ## 1. Funktionsumfang
 
- - Bindeglied zwischen Netzwerk und IPS-Instanzen vom Type Node und Konfigurator.  
- - Auslesen und darstellen von Zuständes des KLF200.  
+- Bindeglied zwischen Netzwerk und IPS-Instanzen vom Type Node und Konfigurator.  
+- Auslesen und darstellen von Zuständes des KLF200.  
 
 ## 2. Voraussetzungen
 
- - IPS ab Version 6.0  
- - KLF200 io-homecontrol® Gateway  
-    - KLF muss per LAN angeschlossen sein  
-    - KLF Firmware 2.0.0.71 oder neuer  
+- IPS ab Version 6.0  
+- KLF200 io-homecontrol® Gateway  
+  - KLF muss per LAN angeschlossen sein  
+  - KLF Firmware 2.0.0.71 oder neuer  
 
 ## 3. Software-Installation
 
-* Dieses Modul ist Bestandteil der [VeluxKLF200-Library](../README.md#3-software-installation).  
+- Dieses Modul ist Bestandteil der [VeluxKLF200-Library](../README.md#3-software-installation).  
 
 ## 4. Einrichten der Instanzen in IP-Symcon
 
@@ -101,7 +100,7 @@ Wird automatisch beim Verbinden mit dem Gateway ausgeführt.
 array KLF200_GetGatewayTime(int $InstanzeID);
 ```
 Liest die aktuelle Zeit aus dem Gateway, und liefert ein Array mit folgenden Feldern.  
-Es wird keine lokale Uhrzeit, und keine Sommerzeit unterstützt. Das bool-Feld 'DaylightSavingFlag' wird immer false sein.   
+Es wird keine lokale Uhrzeit, und keine Sommerzeit unterstützt. Das bool-Feld 'DaylightSavingFlag' wird immer false sein.  
 ```php
     'Timestamp',
     'Second',
@@ -129,12 +128,11 @@ Es gibt keine speziellen Aktionen für dieses Modul.
 
   Die Library ist für die nicht kommerzielle Nutzung kostenlos, Schenkungen als Unterstützung für den Autor werden hier akzeptiert:  
 
-<a href="https://www.paypal.com/donate?hosted_button_id=G2SLW2MEMQZH2" target="_blank"><img src="https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_LG.gif" border="0" /></a>
+[![PayPal.Me](https://img.shields.io/badge/PayPal-Me-lightblue.svg)](https://paypal.me/Nall4chan)  
 
-[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](https://www.amazon.de/hz/wishlist/ls/YU4AI9AQT9F?ref_=wl_share) 
-
+[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](https://www.amazon.de/hz/wishlist/ls/YU4AI9AQT9F?ref_=wl_share)  
 
 ## 10. Lizenz
 
   IPS-Modul:  
-  [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
+  [Custom NC-SA](../LICENSE)  
