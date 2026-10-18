@@ -111,7 +111,7 @@ class KLF200Gateway extends IPSModule
             \KLF200\ClientSocket\Property::Port      => 51200,
             \KLF200\ClientSocket\Property::UseSSL    => true,
             \KLF200\ClientSocket\Property::VerifyPeer=> false,
-            \KLF200\ClientSocket\Property::VerifyHost=> true
+            \KLF200\ClientSocket\Property::VerifyHost=> false
         ];
         return json_encode($Config);
     }
